@@ -227,10 +227,54 @@ void EVENT_USB_Device_ConfigurationChanged(void)
 	LEDs_SetAllLEDs(ConfigSuccess ? LEDMASK_USB_READY : LEDMASK_USB_ERROR);
 }
 
+#define VENDOR_CODE 42
+#define GET_URL 2
+#define GET_SERIALIZATION 3
+#define WEBUSB_URL 3
+
 /** Event handler for the library USB Control Request reception event. */
 void EVENT_USB_Device_ControlRequest(void)
 {
-	HID_Device_ProcessControlRequest(&Generic_HID_Interface);
+	switch (USB_ControlRequest.bmRequestType) {
+		case 0xC0:
+			bool unrecognized_request = false;
+			uint8_t descriptor[USB_ControlRequest.wLength] = {0};
+
+			if (USB_ControlRequest.bRequest != VENDOR_CODE) {
+				unrecognized_request = true;
+			}
+
+			switch (USB_ControlRequest.wIndex) {
+				case GET_URL:
+					/* TODO: build WebUSB URL descriptor
+					 * CreateWebUSB_URL_Descriptor(descriptor, USB_ControlRequest.wValue)
+					 * */
+					break;
+				case GET_SERIALIZATION:
+					/* TODO: build WebUSB HID Serialization descriptor
+					 * CreateWebUSB_HID_Descriptor(descriptor, USB_ControlRequest.wValue)
+					 * */
+					break;
+				default:
+					unrecognized_request = true;
+			}
+
+			if (!unrecognized_request) {
+
+				Endpoint_ClearSETUP();
+
+				/* Write the descriptor data to the control endpoint */
+				Endpoint_Write_Control_Stream_LE(&descriptor, sizeof(descriptor));
+				Endpoint_ClearOUT();
+
+			} else {
+				HID_Device_ProcessControlRequest(&Generic_HID_Interface);
+			}
+
+			break;
+		default:
+			HID_Device_ProcessControlRequest(&Generic_HID_Interface);
+	}
 }
 
 /** Event handler for the USB device Start Of Frame event. */
