@@ -219,8 +219,8 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 			.TotalEndpoints         = 1,
 
 			.Class                  = USB_CSCP_VendorSpecificClass,
-			.SubClass               = USB_CSCP_VendorSpecificSubclass,
-			.Protocol               = USB_CSCP_VendorSpecificProtocol,
+			.SubClass               = HID_CSCP_NonBootSubclass,
+			.Protocol               = HID_CSCP_NonBootProtocol,
 
 			.InterfaceStrIndex      = NO_DESCRIPTOR
 		},
@@ -290,6 +290,9 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 				Address = &DeviceDescriptor;
 			}
 			Size    = sizeof(USB_Descriptor_Device_t);
+			break;
+		case DTYPE_BOS:
+			/* TODO: Return BOS descriptor */
 			break;
 		case DTYPE_Configuration:
 			Address = &ConfigurationDescriptor;
