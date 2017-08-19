@@ -163,3 +163,5 @@ tags
 *.lai
 
 # Executables
+
+cmake-build-debug
