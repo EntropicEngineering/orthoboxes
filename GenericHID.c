@@ -227,7 +227,6 @@ void EVENT_USB_Device_ConfigurationChanged(void)
 	LEDs_SetAllLEDs(ConfigSuccess ? LEDMASK_USB_READY : LEDMASK_USB_ERROR);
 }
 
-#define VENDOR_CODE 42
 #define GET_URL 2
 #define GET_SERIALIZATION 3
 #define WEBUSB_URL 3
@@ -235,12 +234,16 @@ void EVENT_USB_Device_ConfigurationChanged(void)
 /** Event handler for the library USB Control Request reception event. */
 void EVENT_USB_Device_ControlRequest(void)
 {
-	switch (USB_ControlRequest.bmRequestType) {
-		case 0xC0:
-			bool unrecognized_request = false;
-			uint8_t descriptor[USB_ControlRequest.wLength] = {0};
+	bool unrecognized_request;
+	uint8_t descriptor[USB_ControlRequest.wLength];
 
-			if (USB_ControlRequest.bRequest != VENDOR_CODE) {
+	switch (USB_ControlRequest.bmRequestType) {
+
+		case 0xC0:
+
+			unrecognized_request = false;
+
+			if (USB_ControlRequest.bRequest != WEBUSB_VENDOR_CODE) {
 				unrecognized_request = true;
 			}
 

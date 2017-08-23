@@ -187,6 +187,38 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptorPokey =
 	.NumberOfConfigurations = FIXED_NUM_CONFIGURATIONS
 };
 
+/** WebUSB Platform Device Capability Descriptor structure. This descriptor, located in FLASH memory, describes the
+ *  device as a WebUSB capable, allowing Chrome to communicate with it. The descriptor is included as part of the
+ *  device's BOS, and provides the WebUSB UUID, along with a landing page that the browser may direct users to when
+ *  it first detects the device.
+ */
+/* TODO: malloc(WEBUSB_DESCRIPTOR_SIZE) memory for WebUSBDescriptor & initialize it.
+ * Currently, .CapabilityData is being implicitly truncated.
+ * */
+const USB_DeviceCapabilityDescriptor_Platform_t PROGMEM WebUSBDescriptor =
+{
+	.Header = {.Size = WEBUSB_DESCRIPTOR_SIZE, .Type = DTYPE_DeviceCapability},
+	.DeviceCapability = DCTYPE_Platform,
+	.Reserved = 0,
+	/* python >>> tuple(uuid.UUID('3408b638-09a9-47a0-8bfd-a0768815b665').bytes_le) */
+	.PlatformUUID = {56, 182, 8, 52, 169, 9, 160, 71, 139, 253, 160, 118, 136, 21, 182, 101},
+	.CapabilityData = {VERSION_BCD(1, 0, 0), WEBUSB_VENDOR_CODE, WEBUSB_LANDING_PAGE_INDEX}
+};
+
+/** Binary device Object Store (BOS) descriptor structure. This descriptor, located in FLASH memory, describes a
+ *  flexible and extensible framework for describing and adding device-level capabilities to the set of USB standard
+ *  specifications. The BOS descriptor defines a root descriptor that is similar to the configuration descriptor,
+ *  and is the base descriptor for accessing a family of related descriptors. It defines the number of 'sub' Device
+ *  Capability Descriptors and the total length of itself and the sub-descriptors.
+ */
+const USB_Descriptor_BOS_t PROGMEM BOSDescriptor =
+{
+	.Header = {.Size = sizeof(USB_Descriptor_BOS_t), .Type = DTYPE_BOS},
+
+	.NumberOfDeviceCapabilityDescriptors = 1, /* WebUSB Platform */
+	.TotalLength = 0
+};
+
 /** Configuration descriptor structure. This descriptor, located in FLASH memory, describes the usage
  *  of the device in one of its supported configurations, including information about any device interfaces
  *  and endpoints. The descriptor is read out by the USB host during the enumeration process when selecting
