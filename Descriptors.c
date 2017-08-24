@@ -192,17 +192,16 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptorPokey =
  *  device's BOS, and provides the WebUSB UUID, along with a landing page that the browser may direct users to when
  *  it first detects the device.
  */
-/* TODO: malloc(WEBUSB_DESCRIPTOR_SIZE) memory for WebUSBDescriptor & initialize it.
- * Currently, .CapabilityData is being implicitly truncated.
- * */
-const USB_DeviceCapabilityDescriptor_Platform_t PROGMEM WebUSBDescriptor =
+const WebUSB_Descriptor_t PROGMEM WebUSBDescriptor =
 {
-	.Header = {.Size = WEBUSB_DESCRIPTOR_SIZE, .Type = DTYPE_DeviceCapability},
+	.Header = {.Size = sizeof(WebUSB_Descriptor_t), .Type = DTYPE_DeviceCapability},
 	.DeviceCapability = DCTYPE_Platform,
 	.Reserved = 0,
 	/* python >>> tuple(uuid.UUID('3408b638-09a9-47a0-8bfd-a0768815b665').bytes_le) */
 	.PlatformUUID = {56, 182, 8, 52, 169, 9, 160, 71, 139, 253, 160, 118, 136, 21, 182, 101},
-	.CapabilityData = {VERSION_BCD(1, 0, 0), WEBUSB_VENDOR_CODE, WEBUSB_LANDING_PAGE_INDEX}
+	.Version = VERSION_BCD(1, 0, 0),
+	.VendorCode = WEBUSB_VENDOR_CODE,
+	.LandingPage = WEBUSB_LANDING_PAGE_INDEX
 };
 
 /** Binary device Object Store (BOS) descriptor structure. This descriptor, located in FLASH memory, describes a
@@ -216,7 +215,7 @@ const USB_Descriptor_BOS_t PROGMEM BOSDescriptor =
 	.Header = {.Size = sizeof(USB_Descriptor_BOS_t), .Type = DTYPE_BOS},
 
 	.NumberOfDeviceCapabilityDescriptors = 1, /* WebUSB Platform */
-	.TotalLength = 0
+	.TotalLength = sizeof(USB_Descriptor_BOS_t) + sizeof(WebUSB_Descriptor_t)
 };
 
 /** Configuration descriptor structure. This descriptor, located in FLASH memory, describes the usage
@@ -324,7 +323,8 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 			Size    = sizeof(USB_Descriptor_Device_t);
 			break;
 		case DTYPE_BOS:
-			/* TODO: Return BOS descriptor */
+			Address = &BOSDescriptor;
+			Size = sizeof(USB_Descriptor_BOS_t);
 			break;
 		case DTYPE_Configuration:
 			Address = &ConfigurationDescriptor;

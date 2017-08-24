@@ -24,7 +24,7 @@ set(SOURCE_FILES
         Timer.c
         Timer.h
         WireConversions.c
-        WireConversions.h)
+        WireConversions.h webusb.h)
 
 include_directories(lufa /usr/local/CrossPack-AVR/avr/include)
 

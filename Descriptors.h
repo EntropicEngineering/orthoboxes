@@ -41,6 +41,8 @@
 
 		#include <LUFA/Drivers/USB/USB.h>
 
+		#include "webusb.h"
+
 		#include "Config/AppConfig.h"
 
 	/* Type Defines: */
