@@ -227,49 +227,45 @@ void EVENT_USB_Device_ConfigurationChanged(void)
 	LEDs_SetAllLEDs(ConfigSuccess ? LEDMASK_USB_READY : LEDMASK_USB_ERROR);
 }
 
+/** URL descriptor string. This is a UTF-8 string containing a URL excluding the prefix. At least one of these must be
+ * 	defined and returned when the Landing Page descriptor index is requested.
+ */
+const WebUSB_URL_Descriptor_t PROGMEM WebUSB_LandingPage = WEBUSB_URL_DESCRIPTOR(1, u8"www.xlms.org");
+
 /** Event handler for the library USB Control Request reception event. */
 void EVENT_USB_Device_ControlRequest(void)
 {
-	bool unrecognized_request;
-	uint8_t descriptor[USB_ControlRequest.wLength];
-
 	switch (USB_ControlRequest.bmRequestType) {
 
-		case 0xC0:
+		case WEBUSB_REQUEST_TYPE:
 
-			unrecognized_request = false;
+			if (USB_ControlRequest.bRequest == WEBUSB_VENDOR_CODE) {
 
-			if (USB_ControlRequest.bRequest != WEBUSB_VENDOR_CODE) {
-				unrecognized_request = true;
-			}
+				switch (USB_ControlRequest.wIndex) {
+					case WebUSB_RTYPE_GetURL:
+						/* Free the endpoint for the next Request */
+						Endpoint_ClearSETUP();
 
-			switch (USB_ControlRequest.wIndex) {
-				case GET_URL:
-					/* TODO: build WebUSB URL descriptor
-					 * CreateWebUSB_URL_Descriptor(descriptor, USB_ControlRequest.wValue)
-					 * */
-					break;
-				case GET_SERIALIZATION:
-					/* TODO: build WebUSB HID Serialization descriptor
-					 * CreateWebUSB_HID_Descriptor(descriptor, USB_ControlRequest.wValue)
-					 * */
-					break;
-				default:
-					unrecognized_request = true;
-			}
+						switch (USB_ControlRequest.wValue) {
+							case WEBUSB_LANDING_PAGE_INDEX:
+								/* Write the descriptor data to the control endpoint */
+								Endpoint_Write_Control_Stream_LE(&WebUSB_LandingPage, sizeof(WebUSB_LandingPage));
+								/* Release the endpoint after transaction. */
+								Endpoint_ClearOUT();
+								break;
+							default:    /* Stall transfer on invalid index. */
+								Endpoint_StallTransaction();
+								break;
+						}
+						break;
+					case WebUSB_RTYPE_GetSerialization:
+						/* TODO: build WebUSB HID Serialization descriptor */
+						break;
+				}
 
-			if (!unrecognized_request) {
-
-				Endpoint_ClearSETUP();
-
-				/* Write the descriptor data to the control endpoint */
-				Endpoint_Write_Control_Stream_LE(&descriptor, sizeof(descriptor));
-				Endpoint_ClearOUT();
-
-			} else {
+			} else {    /* Non-matching vendor code, request not coming from browser */
 				HID_Device_ProcessControlRequest(&Generic_HID_Interface);
 			}
-
 			break;
 		default:
 			HID_Device_ProcessControlRequest(&Generic_HID_Interface);

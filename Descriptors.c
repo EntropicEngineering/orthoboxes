@@ -187,22 +187,12 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptorPokey =
 	.NumberOfConfigurations = FIXED_NUM_CONFIGURATIONS
 };
 
-/** WebUSB Platform Device Capability Descriptor structure. This descriptor, located in FLASH memory, describes the
+/** WebUSB Platform Device Capability Descriptor. This descriptor, located in FLASH memory, describes the
  *  device as a WebUSB capable, allowing Chrome to communicate with it. The descriptor is included as part of the
  *  device's BOS, and provides the WebUSB UUID, along with a landing page that the browser may direct users to when
  *  it first detects the device.
  */
-const WebUSB_Descriptor_t PROGMEM WebUSBDescriptor =
-{
-	.Header = {.Size = sizeof(WebUSB_Descriptor_t), .Type = DTYPE_DeviceCapability},
-	.DeviceCapability = DCTYPE_Platform,
-	.Reserved = 0,
-	/* python >>> tuple(uuid.UUID('3408b638-09a9-47a0-8bfd-a0768815b665').bytes_le) */
-	.PlatformUUID = {56, 182, 8, 52, 169, 9, 160, 71, 139, 253, 160, 118, 136, 21, 182, 101},
-	.Version = VERSION_BCD(1, 0, 0),
-	.VendorCode = WEBUSB_VENDOR_CODE,
-	.LandingPage = WEBUSB_LANDING_PAGE_INDEX
-};
+const USB_Descriptor_DeviceCapability_Platform_t PROGMEM WebUSBDescriptor = WEBUSB_PLATFORM_DESCRIPTOR(WEBUSB_VENDOR_CODE, WEBUSB_LANDING_PAGE_INDEX);
 
 /** Binary device Object Store (BOS) descriptor structure. This descriptor, located in FLASH memory, describes a
  *  flexible and extensible framework for describing and adding device-level capabilities to the set of USB standard
@@ -212,10 +202,13 @@ const WebUSB_Descriptor_t PROGMEM WebUSBDescriptor =
  */
 const USB_Descriptor_BOS_t PROGMEM BOSDescriptor =
 {
-	.Header = {.Size = sizeof(USB_Descriptor_BOS_t), .Type = DTYPE_BOS},
+		.BOS_Header = {
+				.Header = {.Size = sizeof(USB_Descriptor_BOS_Header_t), .Type = DTYPE_BOS},
 
-	.NumberOfDeviceCapabilityDescriptors = 1, /* WebUSB Platform */
-	.TotalLength = sizeof(USB_Descriptor_BOS_t) + sizeof(WebUSB_Descriptor_t)
+				.NumberOfDeviceCapabilityDescriptors = 1, /* WebUSB Platform */
+				.TotalLength = sizeof(USB_Descriptor_BOS_Header_t) + sizeof(WebUSBDescriptor)
+		},
+		.Capabilities = {{WebUSBDescriptor}}
 };
 
 /** Configuration descriptor structure. This descriptor, located in FLASH memory, describes the usage
@@ -324,7 +317,7 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 			break;
 		case DTYPE_BOS:
 			Address = &BOSDescriptor;
-			Size = sizeof(USB_Descriptor_BOS_t);
+			Size = sizeof(BOSDescriptor);
 			break;
 		case DTYPE_Configuration:
 			Address = &ConfigurationDescriptor;

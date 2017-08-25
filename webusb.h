@@ -7,26 +7,44 @@
 
 #include <LUFA/Drivers/USB/USB.h>
 
-/** \brief WebUSB Descriptor (LUFA naming conventions).
- *
- *  Type define for a WebUSB Platform Capability Descriptor. This structure uses LUFA-specific element names
- *  to make each element's purpose clearer.
- *
- *  \note Regardless of CPU architecture, these values should be stored as little endian.
- */
-typedef struct
-{
-	USB_Descriptor_Header_t Header; /**< Descriptor header, including type and size. */
+#define WEBUSB_VERSION VERSION_BCD(1, 0, 0)
 
-	uint8_t  DeviceCapability; /**< Type of the capability: \ref USB_DeviceCapabilityTypes_t DCTYPE_Platform */
-	uint8_t  Reserved; /**< This field is reserved and shall be set to zero. */
-	uint8_t  PlatformUUID[16]; /**< This is a 128-bit number that uniquely identifies a platform
-										   *   specific capability of the device.
-										   */
-	uint16_t Version; /**< Binary Coded Decimal version of protocol, currently 1.0.0 */
-	uint8_t  VendorCode; /**< Value in the bRequest field made by WebUSB Device Requests from browser. */
-	uint8_t  LandingPage; /**< Index of the WebUSB Descriptor for the a landing page appropriate to the device. */
-} ATTR_PACKED WebUSB_Descriptor_t;
+#define WEBUSB_REQUEST_TYPE (REQDIR_DEVICETOHOST | REQTYPE_VENDOR | REQREC_DEVICE)
+
+/* python >>> tuple(uuid.UUID('3408b638-09a9-47a0-8bfd-a0768815b665').bytes_le) */
+#define WEBUSB_PLATFORM_UUID {56, 182, 8, 52, 169, 9, 160, 71, 139, 253, 160, 118, 136, 21, 182, 101}
+
+/** \brief Convenience macro to easily create \ref USB_Descriptor_DeviceCapability_Platform_t instances for the WebUSB platform.
+ *
+ * 	\param[in] VendorCode  Vendor Code that all control requests coming from the browser must use.
+ *
+ * 	\param[in] LandingPageIndex  Index of the URL Descriptor to use as the Landing Page for the device.
+ *
+ */
+#define WEBUSB_PLATFORM_DESCRIPTOR(VendorCode, LandingPageIndex) \
+{ \
+	.Header = {.Size = 24, .Type = DTYPE_DeviceCapability}, \
+	.DeviceCapability = DCTYPE_Platform, \
+	.Reserved = 0, \
+	.PlatformUUID = WEBUSB_PLATFORM_UUID, \
+	.CapabilityData = {(uint8_t)(WEBUSB_VERSION % 256), (uint8_t)(WEBUSB_VERSION / 256), \
+						VendorCode, \
+						LandingPageIndex } \
+}
+
+/** \brief Convenience macro to easily create \ref WebUSB_URL_Descriptor_t instances from a wide character string.
+ *
+ *  \note This macro is for little-endian systems only.
+ *
+ * 	\param[in] Prefix  0 for "http://", 1 for "https://", 255 for included in the URL string.
+ *
+ *  \param[in] URL  URL string to initialize a URL Descriptor structure with.
+ *
+ * 	\note Prefix String literal with u8 to ensure proper conversion: e.g. WEBUSB_URL_DESCRIPTOR(u8"www.google.com")
+ */
+#define WEBUSB_URL_DESCRIPTOR(Prefix, URL)     { .Header = {.Size = sizeof(WebUSB_URL_Descriptor_t) + (sizeof(URL) - 1), \
+															   .Type = WebUSB_DTYPE_URL}, \
+													.Scheme = Prefix, .UTF8_URL = URL }
 
 enum WebUSB_Request_t
 {
@@ -51,7 +69,7 @@ typedef struct
 	USB_Descriptor_Header_t Header; /**< Descriptor header, including type (WebUSB_DTYPE_URL) and size. */
 
 	uint8_t Scheme; /**< URL scheme prefix: 0 means http://, 1 means https://, 255 means included in URL */
-	char URL[]; /**< UTF-8 encoded URL (excluding scheme prefix). */
-};
+	uint8_t UTF8_URL[]; /**< UTF-8 encoded URL (excluding scheme prefix). */
+} ATTR_PACKED WebUSB_URL_Descriptor_t;
 
 #endif //_WEBUSB_H
