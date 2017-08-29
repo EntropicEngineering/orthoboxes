@@ -39,6 +39,11 @@
 #include "Timer.h"
 #include "led.h"
 #include "box.h"
+#include "debug.h"
+
+#if DEBUG
+#include "lufa/LUFA/Drivers/Peripheral/AVR8/Serial_AVR8.c"  /* DEBUG */
+#endif
 
 #define STANDARD_INPUT_REPORT(rid,usg,byts) HID_RI_REPORT_ID(8,rid),\
 	HID_RI_USAGE(8, usg),\
@@ -318,7 +323,9 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 	switch (DescriptorType)
 	{
 		case DTYPE_Device:
-			Serial_SendString("Returning Device Descriptor\n");  /* DEBUG */
+#if DEBUG
+			Serial_SendString("Returning Device Descriptor\n");
+#endif
 			if (box_type == BOX_TYPE_POKEY) {
 				Address = &DeviceDescriptorPokey;
 			} else {
@@ -327,7 +334,9 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 			Size    = sizeof(USB_Descriptor_Device_t);
 			break;
 		case DTYPE_BOS:
-			Serial_SendString("Returning BOS Descriptor\n");  /* DEBUG */
+#if DEBUG
+			Serial_SendString("Returning BOS Descriptor\n");
+#endif
 			if (BOSDescriptor.BOS_Header.TotalLength > BOSDescriptor.BOS_Header.Header.Size) {
 
 				uint8_t descriptor[BOSDescriptor.BOS_Header.TotalLength];
@@ -335,26 +344,30 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 					descriptor[i] = 0;
 				}
 
-				memcpy(&descriptor, &BOSDescriptor, BOSDescriptor.BOS_Header.Header.Size);
-				Serial_SendString("descriptor:"); Serial_SendData(descriptor, BOSDescriptor.BOS_Header.TotalLength); Serial_SendByte(0x0A); /* DEBUG */
-
-				Serial_SendString("WebUSBDescriptor:"); Serial_SendData(&WebUSBDescriptor, 24); Serial_SendByte(0x0A);   /* DEBUG */
+				memcpy(descriptor, &BOSDescriptor, BOSDescriptor.BOS_Header.Header.Size);
+#if DEBUG
+				Serial_SendString("WebUSBDescriptor:"); Serial_SendData(&WebUSBDescriptor, 24); Serial_SendByte(0x0A);
+#endif
 
 				uint8_t offset = BOSDescriptor.BOS_Header.Header.Size;
 
 				for (uint8_t i=0; i < BOSDescriptor.BOS_Header.NumberOfDeviceCapabilityDescriptors; i++) {
 
-					Serial_SendString("Offset:"); Serial_SendByte(offset); Serial_SendByte(0x0A);  /* DEBUG */
-					Serial_SendString("CapabilityDescriptor:"); /* DEBUG */
-					Serial_SendData(BOSDescriptor.CapabilityDescriptors[i], BOSDescriptor.CapabilityDescriptors[i]->Header.Size);  /* DEBUG */
-					Serial_SendByte(0x0A);    /* Newline */ /* DEBUG */
+#if DEBUG
+					Serial_SendString("Offset:"); Serial_SendByte(offset); Serial_SendByte(0x0A);
+					Serial_SendString("CapabilityDescriptor:");
+					Serial_SendData(BOSDescriptor.CapabilityDescriptors[i], BOSDescriptor.CapabilityDescriptors[i]->Header.Size);
+					Serial_SendByte(0x0A);    /* Newline */
+#endif
 
 					/* TODO: FIXME WTF WHY DON'T YOU WORK */
-					memcpy(&descriptor + offset, BOSDescriptor.CapabilityDescriptors[i], (size_t)BOSDescriptor.CapabilityDescriptors[i]->Header.Size-1);
+					memcpy(descriptor + offset, BOSDescriptor.CapabilityDescriptors[i], (size_t)BOSDescriptor.CapabilityDescriptors[i]->Header.Size-1);
 					offset += BOSDescriptor.CapabilityDescriptors[i]->Header.Size;
 				}
 
-				Serial_SendString("descriptor:"); Serial_SendData(descriptor, BOSDescriptor.BOS_Header.TotalLength); Serial_SendByte(0x0A); /* DEBUG */
+#if DEBUG
+				Serial_SendString("descriptor:"); Serial_SendData(descriptor, BOSDescriptor.BOS_Header.TotalLength); Serial_SendByte(0x0A);
+#endif
 				Address = &descriptor;
 				Size = sizeof(descriptor);
 			} else {
@@ -363,7 +376,9 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 			}
 			break;
 		case DTYPE_Configuration:
-			Serial_SendString("Returning Configuration Descriptor\n");  /* DEBUG */
+#if DEBUG
+			Serial_SendString("Returning Configuration Descriptor\n");
+#endif
 			Address = &ConfigurationDescriptor;
 			Size    = sizeof(USB_Descriptor_Configuration_t);
 			break;
@@ -393,9 +408,11 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 			Address = &GenericReport;
 			Size    = sizeof(GenericReport);
 			break;
-		default:    /* DEBUG */
-			Serial_SendString("Uncaught Descriptor Request: "); /* DEBUG */
-			Serial_SendByte(DescriptorType);    /* DEBUG */
+#if DEBUG
+		default:
+			Serial_SendString("Uncaught Descriptor Request: ");
+			Serial_SendByte(DescriptorType);
+#endif
 	}
 
 	*DescriptorAddress = Address;

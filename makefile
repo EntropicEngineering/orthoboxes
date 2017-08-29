@@ -20,7 +20,7 @@ OPTIMIZATION = s
 TARGET       = GenericHID
 SRC          = $(TARGET).c Descriptors.c Timer.c box.c pokey.c adc.c led.c WireConversions.c peggy.c $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
 LUFA_PATH    = ./lufa/LUFA
-CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/ -Wall -Wextra -Werror
+CC_FLAGS     = -DDEBUG=1 -DUSE_LUFA_CONFIG_HEADER -IConfig/ -Wall -Wextra -Werror
 LD_FLAGS     =
 
 
