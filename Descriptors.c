@@ -146,7 +146,7 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptor =
 {
 	.Header                 = {.Size = sizeof(USB_Descriptor_Device_t), .Type = DTYPE_Device},
 
-	.USBSpecification       = VERSION_BCD(1,1,0),
+	.USBSpecification       = VERSION_BCD(2,0,1),
 	.Class                  = USB_CSCP_NoDeviceClass,
 	.SubClass               = USB_CSCP_NoDeviceSubclass,
 	.Protocol               = USB_CSCP_NoDeviceProtocol,
@@ -169,7 +169,7 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptorPokey =
 {
 	.Header                 = {.Size = sizeof(USB_Descriptor_Device_t), .Type = DTYPE_Device},
 
-	.USBSpecification       = VERSION_BCD(1,1,0),
+	.USBSpecification       = VERSION_BCD(2,0,1),
 	.Class                  = USB_CSCP_NoDeviceClass,
 	.SubClass               = USB_CSCP_NoDeviceSubclass,
 	.Protocol               = USB_CSCP_NoDeviceProtocol,
@@ -192,7 +192,17 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptorPokey =
  *  device's BOS, and provides the WebUSB UUID, along with a landing page that the browser may direct users to when
  *  it first detects the device.
  */
-const USB_Descriptor_DeviceCapability_Platform_t PROGMEM WebUSBDescriptor = WEBUSB_PLATFORM_DESCRIPTOR(WEBUSB_VENDOR_CODE, WEBUSB_LANDING_PAGE_INDEX);
+const USB_Descriptor_DeviceCapability_Platform_t WebUSBDescriptor =
+{
+	.Header = {.Size = WEBUSB_PLATFORM_DESCRIPTOR_SIZE, .Type = DTYPE_DeviceCapability},
+	.DeviceCapability = DCTYPE_Platform,
+	.Reserved = 0,
+	.PlatformUUID = WEBUSB_PLATFORM_UUID,
+	.CapabilityData = WEBUSB_PLATFORM_CAPABILITY(WEBUSB_VENDOR_CODE, WEBUSB_LANDING_PAGE_INDEX),
+};
+
+#define ASSERT(e) enum {FAIL = 1/(!!(e))};
+ASSERT(sizeof(WebUSBDescriptor) == WEBUSB_PLATFORM_DESCRIPTOR_SIZE - 4) /* The perils of incomplete types in your struct. */
 
 /** Binary device Object Store (BOS) descriptor structure. This descriptor, located in FLASH memory, describes a
  *  flexible and extensible framework for describing and adding device-level capabilities to the set of USB standard
@@ -200,15 +210,15 @@ const USB_Descriptor_DeviceCapability_Platform_t PROGMEM WebUSBDescriptor = WEBU
  *  and is the base descriptor for accessing a family of related descriptors. It defines the number of 'sub' Device
  *  Capability Descriptors and the total length of itself and the sub-descriptors.
  */
-const USB_Descriptor_BOS_t PROGMEM BOSDescriptor =
+const USB_Descriptor_BOS_t BOSDescriptor =
 {
 		.BOS_Header = {
 				.Header = {.Size = sizeof(USB_Descriptor_BOS_Header_t), .Type = DTYPE_BOS},
 
 				.NumberOfDeviceCapabilityDescriptors = 1, /* WebUSB Platform */
-				.TotalLength = sizeof(USB_Descriptor_BOS_Header_t) + sizeof(WebUSBDescriptor)
+				.TotalLength = sizeof(USB_Descriptor_BOS_Header_t) + WEBUSB_PLATFORM_DESCRIPTOR_SIZE
 		},
-		.Capabilities = {{WebUSBDescriptor}}
+		.CapabilityDescriptors = {&WebUSBDescriptor}
 };
 
 /** Configuration descriptor structure. This descriptor, located in FLASH memory, describes the usage
@@ -308,6 +318,7 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 	switch (DescriptorType)
 	{
 		case DTYPE_Device:
+			Serial_SendString("Returning Device Descriptor\n");  /* DEBUG */
 			if (box_type == BOX_TYPE_POKEY) {
 				Address = &DeviceDescriptorPokey;
 			} else {
@@ -316,10 +327,43 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 			Size    = sizeof(USB_Descriptor_Device_t);
 			break;
 		case DTYPE_BOS:
-			Address = &BOSDescriptor;
-			Size = sizeof(BOSDescriptor);
+			Serial_SendString("Returning BOS Descriptor\n");  /* DEBUG */
+			if (BOSDescriptor.BOS_Header.TotalLength > BOSDescriptor.BOS_Header.Header.Size) {
+
+				uint8_t descriptor[BOSDescriptor.BOS_Header.TotalLength];
+				for (uint8_t i=0; i < BOSDescriptor.BOS_Header.TotalLength; i++) {
+					descriptor[i] = 0;
+				}
+
+				memcpy(&descriptor, &BOSDescriptor, BOSDescriptor.BOS_Header.Header.Size);
+				Serial_SendString("descriptor:"); Serial_SendData(descriptor, BOSDescriptor.BOS_Header.TotalLength); Serial_SendByte(0x0A); /* DEBUG */
+
+				Serial_SendString("WebUSBDescriptor:"); Serial_SendData(&WebUSBDescriptor, 24); Serial_SendByte(0x0A);   /* DEBUG */
+
+				uint8_t offset = BOSDescriptor.BOS_Header.Header.Size;
+
+				for (uint8_t i=0; i < BOSDescriptor.BOS_Header.NumberOfDeviceCapabilityDescriptors; i++) {
+
+					Serial_SendString("Offset:"); Serial_SendByte(offset); Serial_SendByte(0x0A);  /* DEBUG */
+					Serial_SendString("CapabilityDescriptor:"); /* DEBUG */
+					Serial_SendData(BOSDescriptor.CapabilityDescriptors[i], BOSDescriptor.CapabilityDescriptors[i]->Header.Size);  /* DEBUG */
+					Serial_SendByte(0x0A);    /* Newline */ /* DEBUG */
+
+					/* TODO: FIXME WTF WHY DON'T YOU WORK */
+					memcpy(&descriptor + offset, BOSDescriptor.CapabilityDescriptors[i], (size_t)BOSDescriptor.CapabilityDescriptors[i]->Header.Size-1);
+					offset += BOSDescriptor.CapabilityDescriptors[i]->Header.Size;
+				}
+
+				Serial_SendString("descriptor:"); Serial_SendData(descriptor, BOSDescriptor.BOS_Header.TotalLength); Serial_SendByte(0x0A); /* DEBUG */
+				Address = &descriptor;
+				Size = sizeof(descriptor);
+			} else {
+				Address = &BOSDescriptor;
+				Size = sizeof(BOSDescriptor);
+			}
 			break;
 		case DTYPE_Configuration:
+			Serial_SendString("Returning Configuration Descriptor\n");  /* DEBUG */
 			Address = &ConfigurationDescriptor;
 			Size    = sizeof(USB_Descriptor_Configuration_t);
 			break;
@@ -349,6 +393,9 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 			Address = &GenericReport;
 			Size    = sizeof(GenericReport);
 			break;
+		default:    /* DEBUG */
+			Serial_SendString("Uncaught Descriptor Request: "); /* DEBUG */
+			Serial_SendByte(DescriptorType);    /* DEBUG */
 	}
 
 	*DescriptorAddress = Address;

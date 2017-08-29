@@ -129,6 +129,8 @@ int main(void)
 	timer_init();
 	box_init();
 	adc_task();
+
+	Serial_Init(115200, 0); /* DEBUG */
 	
 	//could make a "box" struct with some function pointers but what's the point
 	//TODO exactly how early can we do this? Definitely after ADC.
