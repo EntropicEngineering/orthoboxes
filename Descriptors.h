@@ -43,6 +43,8 @@
 
 		#include "webusb.h"
 
+		#include "debug.h"
+
 		#include "Config/AppConfig.h"
 
 	/* Type Defines: */

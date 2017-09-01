@@ -54,13 +54,12 @@
 		#include "adc.h"
 		#include "pokey.h"
 		#include "peggy.h"
+		#include "debug.h"
 
 		#include <LUFA/Common/Common.h>
 		#include <LUFA/Drivers/Board/LEDs.h>
 		#include <LUFA/Drivers/USB/USB.h>
 		#include <LUFA/Platform/Platform.h>
-
-		#include <LUFA/Drivers/Peripheral/Serial.h> /* DEBUG */
 
 	/* Macros: */
 		/** LED mask for the library LED driver, to indicate that the USB interface is not ready. */

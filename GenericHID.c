@@ -35,6 +35,7 @@
  */
 
 #include "GenericHID.h"
+#include "webusb.h"
 
 /** Buffer to hold the previously generated HID report, for comparison purposes inside the HID class driver. */
 static uint8_t PrevHIDReportBuffer[255]; 
@@ -130,8 +131,8 @@ int main(void)
 	box_init();
 	adc_task();
 
-	Serial_Init(115200, 0); /* DEBUG */
-	
+	Serial_Init(115200, 0);
+
 	//could make a "box" struct with some function pointers but what's the point
 	//TODO exactly how early can we do this? Definitely after ADC.
 	box_type = determine_box_type();
@@ -232,15 +233,16 @@ void EVENT_USB_Device_ConfigurationChanged(void)
 /** URL descriptor string. This is a UTF-8 string containing a URL excluding the prefix. At least one of these must be
  * 	defined and returned when the Landing Page descriptor index is requested.
  */
-const WebUSB_URL_Descriptor_t PROGMEM WebUSB_LandingPage = WEBUSB_URL_DESCRIPTOR(1, u8"www.xlms.org");
+const WebUSB_URL_Descriptor_t WebUSB_LandingPage = WEBUSB_URL_DESCRIPTOR(1, u8"www.xlms.org");
 
 /** Event handler for the library USB Control Request reception event. */
 void EVENT_USB_Device_ControlRequest(void)
 {
+	Serial_SendString("Got Control Request:"); Serial_SendData(&USB_ControlRequest, sizeof(USB_ControlRequest)); Serial_SendByte(0x0A);
+
 	switch (USB_ControlRequest.bmRequestType) {
 
 		case WEBUSB_REQUEST_TYPE:
-
 			if (USB_ControlRequest.bRequest == WEBUSB_VENDOR_CODE) {
 
 				switch (USB_ControlRequest.wIndex) {
@@ -251,7 +253,7 @@ void EVENT_USB_Device_ControlRequest(void)
 						switch (USB_ControlRequest.wValue) {
 							case WEBUSB_LANDING_PAGE_INDEX:
 								/* Write the descriptor data to the control endpoint */
-								Endpoint_Write_Control_Stream_LE(&WebUSB_LandingPage, sizeof(WebUSB_LandingPage));
+								Endpoint_Write_Control_Stream_LE(&WebUSB_LandingPage, WebUSB_LandingPage.Header.Size);
 								/* Release the endpoint after transaction. */
 								Endpoint_ClearOUT();
 								break;

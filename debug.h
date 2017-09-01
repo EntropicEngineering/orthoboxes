@@ -5,8 +5,7 @@
 #ifndef ORTHOBOXES_DEBUG_H
 #define ORTHOBOXES_DEBUG_H
 
-#ifndef DEBUG
-	#define DEBUG 0
-#endif
+#define __INCLUDE_FROM_SERIAL_H
+#include <LUFA/lufa/Drivers/Peripheral/AVR8/Serial_AVR8.h>
 
 #endif //ORTHOBOXES_DEBUG_H
