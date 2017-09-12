@@ -187,7 +187,7 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptorPokey =
 	.NumberOfConfigurations = FIXED_NUM_CONFIGURATIONS
 };
 
-/** WebUSB Platform Device Capability Descriptor. This descriptor, located in FLASH memory, describes the
+/** WebUSB Platform Device Capability Descriptor. This descriptor, located in memory, describes the
  *  device as a WebUSB capable, allowing Chrome to communicate with it. The descriptor is included as part of the
  *  device's BOS, and provides the WebUSB UUID, along with a landing page that the browser may direct users to when
  *  it first detects the device.
@@ -224,7 +224,8 @@ const USB_Descriptor_BOS_t BOSDescriptor =
 		.CapabilityDescriptors = {&WebUSBDescriptor}
 };
 
-uint8_t BOS_descriptor[TOTAL_BOS_LENGTH];
+uint8_t BOS_bytes[TOTAL_BOS_LENGTH];
+uint16_t BOS_size = 0;
 
 /** Configuration descriptor structure. This descriptor, located in FLASH memory, describes the usage
  *  of the device in one of its supported configurations, including information about any device interfaces
@@ -333,18 +334,20 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 			break;
 		case DTYPE_BOS:
 			Serial_SendString("Returning BOS Descriptor\n");
-			if (BOSDescriptor.BOS_Header.TotalLength > BOSDescriptor.BOS_Header.Header.Size) {
+			if (BOS_size == 0) {
 
-				for (uint8_t i=0; i < BOSDescriptor.BOS_Header.TotalLength; i++) {
-					BOS_descriptor[i] = 0;
+				for (uint8_t i = 0; i < BOSDescriptor.BOS_Header.TotalLength; i++) {
+					BOS_bytes[i] = 0;
 				}
 
-				memcpy(BOS_descriptor, &BOSDescriptor, BOSDescriptor.BOS_Header.Header.Size);
-				Serial_SendString("WebUSBDescriptor:"); Serial_SendData(&WebUSBDescriptor, 24); Serial_SendByte(0x0A);
+				memcpy(BOS_bytes, &BOSDescriptor, BOSDescriptor.BOS_Header.Header.Size);
+				Serial_SendString("WebUSBDescriptor:");
+				Serial_SendData(&WebUSBDescriptor, 24);
+				Serial_SendByte(0x0A);
 
 				uint8_t offset = BOSDescriptor.BOS_Header.Header.Size;
 
-				for (uint8_t i=0; i < BOSDescriptor.BOS_Header.NumberOfDeviceCapabilityDescriptors; i++) {
+				for (uint8_t i = 0; i < BOSDescriptor.BOS_Header.NumberOfDeviceCapabilityDescriptors; i++) {
 
 #if 0
 					Serial_SendString("Offset:"); Serial_SendByte(offset); Serial_SendByte(0x0A);
@@ -353,16 +356,15 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 					Serial_SendByte(0x0A);    /* Newline */
 #endif
 
-					memcpy(BOS_descriptor + offset, BOSDescriptor.CapabilityDescriptors[i], (size_t)BOSDescriptor.CapabilityDescriptors[i]->Header.Size);
+					memcpy(BOS_bytes + offset, BOSDescriptor.CapabilityDescriptors[i],
+					       (size_t) BOSDescriptor.CapabilityDescriptors[i]->Header.Size);
 					offset += BOSDescriptor.CapabilityDescriptors[i]->Header.Size;
 				}
 
-				Address = &BOS_descriptor;
-				Size = sizeof(BOS_descriptor);
-			} else {
-				Address = &BOSDescriptor;
-				Size = sizeof(BOSDescriptor);
+				BOS_size = sizeof(BOS_bytes);
 			}
+			Address = &BOS_bytes;
+			Size = BOS_size;
 			Serial_SendString("Returned Descriptor:"); Serial_SendData(Address, Size); Serial_SendByte(0x0A);
 			break;
 		case DTYPE_Configuration:
