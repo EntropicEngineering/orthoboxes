@@ -187,45 +187,35 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptorPokey =
 	.NumberOfConfigurations = FIXED_NUM_CONFIGURATIONS
 };
 
-/** WebUSB Platform Device Capability Descriptor. This descriptor, located in memory, describes the
- *  device as a WebUSB capable, allowing Chrome to communicate with it. The descriptor is included as part of the
- *  device's BOS, and provides the WebUSB UUID, along with a landing page that the browser may direct users to when
- *  it first detects the device.
- */
-const USB_Descriptor_DeviceCapability_Platform_t WebUSBDescriptor =
-{
-	.Header = {.Size = WEBUSB_PLATFORM_DESCRIPTOR_SIZE, .Type = DTYPE_DeviceCapability},
-	.DeviceCapability = DCTYPE_Platform,
-	.Reserved = 0,
-	.PlatformUUID = WEBUSB_PLATFORM_UUID,
-	.CapabilityData = WEBUSB_PLATFORM_CAPABILITY(WEBUSB_VENDOR_CODE, WEBUSB_LANDING_PAGE_INDEX),
-};
-
-#define ASSERT(e) enum {FAIL = 1/(!!(e))};
-ASSERT(sizeof(WebUSBDescriptor) == WEBUSB_PLATFORM_DESCRIPTOR_SIZE - 4) /* The perils of incomplete types in your struct. */
-
 /** Binary device Object Store (BOS) descriptor structure. This descriptor, located in FLASH memory, describes a
  *  flexible and extensible framework for describing and adding device-level capabilities to the set of USB standard
  *  specifications. The BOS descriptor defines a root descriptor that is similar to the configuration descriptor,
  *  and is the base descriptor for accessing a family of related descriptors. It defines the number of 'sub' Device
  *  Capability Descriptors and the total length of itself and the sub-descriptors.
  */
+/*
+#define CAPABILITY_DESCRIPTORS \
+	BOS_CAPABILITY(WEBUSB_DESCRIPTOR(WEBUSB_VENDOR_CODE, WEBUSB_LANDING_PAGE_INDEX))
+ */
 
-#define TOTAL_BOS_LENGTH (sizeof(USB_Descriptor_BOS_Header_t) + WEBUSB_PLATFORM_DESCRIPTOR_SIZE)
 
-const USB_Descriptor_BOS_t BOSDescriptor =
-{
-		.BOS_Header = {
-				.Header = {.Size = sizeof(USB_Descriptor_BOS_Header_t), .Type = DTYPE_BOS},
+#define WEBUSB_BYTES WEBUSB_DESCRIPTOR(WEBUSB_VENDOR_CODE, WEBUSB_LANDING_PAGE_INDEX)
 
-				.NumberOfDeviceCapabilityDescriptors = 1, /* WebUSB Platform */
-				.TotalLength = TOTAL_BOS_LENGTH
-		},
-		.CapabilityDescriptors = {&WebUSBDescriptor}
-};
+//#pragma message STRINGIFY_EXPANDED(BOS_DESCRIPTOR_COUNT((WEBUSB_BYTES)(WEBUSB_BYTES)))
+//
+//#define RESULT sizeof((BOS_CAPABILITY_DESCRIPTORS((WEBUSB_BYTES))))
+//#pragma message STRINGIFY_EXPANDED(RESULT)
 
-uint8_t BOS_bytes[TOTAL_BOS_LENGTH];
-uint16_t BOS_size = 0;
+const USB_Descriptor_BOS_t PROGMEM BOSDescriptor = BOS_DESCRIPTOR((WEBUSB_BYTES));
+//{
+//	.BOS_Header = {
+//		.Header = {.Size = sizeof(USB_Descriptor_BOS_Header_t), .Type = DTYPE_BOS},
+//
+//		.NumberOfDeviceCapabilityDescriptors = BOS_NUMBER_OF_CAPABILITIES,
+//		.TotalLength = BOS_TOTAL_LENGTH
+//	},
+//	.CapabilityDescriptors = BOS_CAPABILITY_DESCRIPTORS
+//};
 
 /** Configuration descriptor structure. This descriptor, located in FLASH memory, describes the usage
  *  of the device in one of its supported configurations, including information about any device interfaces
@@ -334,37 +324,8 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 			break;
 		case DTYPE_BOS:
 			Serial_SendString("Returning BOS Descriptor\n");
-			if (BOS_size == 0) {
-
-				for (uint8_t i = 0; i < BOSDescriptor.BOS_Header.TotalLength; i++) {
-					BOS_bytes[i] = 0;
-				}
-
-				memcpy(BOS_bytes, &BOSDescriptor, BOSDescriptor.BOS_Header.Header.Size);
-				Serial_SendString("WebUSBDescriptor:");
-				Serial_SendData(&WebUSBDescriptor, 24);
-				Serial_SendByte(0x0A);
-
-				uint8_t offset = BOSDescriptor.BOS_Header.Header.Size;
-
-				for (uint8_t i = 0; i < BOSDescriptor.BOS_Header.NumberOfDeviceCapabilityDescriptors; i++) {
-
-#if 0
-					Serial_SendString("Offset:"); Serial_SendByte(offset); Serial_SendByte(0x0A);
-					Serial_SendString("CapabilityDescriptor:");
-					Serial_SendData(BOSDescriptor.CapabilityDescriptors[i], BOSDescriptor.CapabilityDescriptors[i]->Header.Size);
-					Serial_SendByte(0x0A);    /* Newline */
-#endif
-
-					memcpy(BOS_bytes + offset, BOSDescriptor.CapabilityDescriptors[i],
-					       (size_t) BOSDescriptor.CapabilityDescriptors[i]->Header.Size);
-					offset += BOSDescriptor.CapabilityDescriptors[i]->Header.Size;
-				}
-
-				BOS_size = sizeof(BOS_bytes);
-			}
-			Address = &BOS_bytes;
-			Size = BOS_size;
+			Address = &BOSDescriptor;
+			Size = pgm_read_byte(&BOSDescriptor.BOS_Header.TotalLength);
 			Serial_SendString("Returned Descriptor:"); Serial_SendData(Address, Size); Serial_SendByte(0x0A);
 			break;
 		case DTYPE_Configuration:

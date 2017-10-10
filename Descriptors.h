@@ -54,8 +54,8 @@
 		 */
 		typedef struct
 		{
-			USB_Descriptor_BOS_Header_t                         BOS_Header;
-			USB_Descriptor_DeviceCapability_Platform_t const    *CapabilityDescriptors[];
+			USB_Descriptor_BOS_Header_t         BOS_Header;
+			uint8_t                             CapabilityDescriptors[];
 		} USB_Descriptor_BOS_t;
 
 		/** Type define for the device configuration descriptor structure. This must be defined in the
