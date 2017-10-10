@@ -40,21 +40,21 @@
  *
  *  \param[in] URL  URL string to initialize a URL Descriptor structure with.
  *
- * 	\note Prefix String literal with u8 to ensure proper conversion: e.g. WEBUSB_URL_DESCRIPTOR(u8"www.google.com")
+ * 	\note Prefix String literal with u8 to ensure proper conversion: e.g. WEBUSB_URL_DESCRIPTOR(u8"www.example.com")
  */
 #define WEBUSB_URL_DESCRIPTOR(Prefix, URL)     { .Header = {.Size = sizeof(WebUSB_URL_Descriptor_t) + (sizeof(URL) - 1), \
-															   .Type = WebUSB_DTYPE_URL}, \
-													.Scheme = Prefix, .UTF8_URL = URL }
+														    .Type = WebUSB_DTYPE_URL}, \
+												 .Scheme = (Prefix), \
+												 .UTF8_URL = (URL) }
 
 enum WebUSB_Request_t
 {
 	WebUSB_RTYPE_GetURL = 2, /**< Indicates the device should return the indicated WebUSB_URL descriptor. */
-	WebUSB_RTYPE_GetSerialization = 3, /**< Indicates that the device should return the WebUSB HID serialization. */
 };
 
 enum WebUSB_Descriptor_t
 {
-	WebUSB_DTYPE_URL = 2, /**< Indicates that the descriptor is a URL descriptor. */
+	WebUSB_DTYPE_URL = 3, /**< Indicates that the descriptor is a URL descriptor. */
 };
 
 /** \brief WebUSB URL Descriptor (LUFA naming convention).

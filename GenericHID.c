@@ -262,9 +262,6 @@ void EVENT_USB_Device_ControlRequest(void)
 								break;
 						}
 						break;
-					case WebUSB_RTYPE_GetSerialization:
-						/* TODO: build WebUSB HID Serialization descriptor */
-						break;
 				}
 
 			} else {    /* Non-matching vendor code, request not coming from browser */

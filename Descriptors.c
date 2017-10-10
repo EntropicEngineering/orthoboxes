@@ -194,13 +194,6 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptorPokey =
  *  Capability Descriptors and the total length of itself and the sub-descriptors.
  */
 
-//#define WEBUSB_BYTES WEBUSB_DESCRIPTOR(WEBUSB_VENDOR_CODE, WEBUSB_LANDING_PAGE_INDEX)
-//
-//#pragma message STRINGIFY_EXPANDED(BOS_DESCRIPTOR_COUNT((WEBUSB_BYTES)(WEBUSB_BYTES)))
-//
-//#define RESULT sizeof((BOS_CAPABILITY_DESCRIPTORS((WEBUSB_BYTES))))
-//#pragma message STRINGIFY_EXPANDED(RESULT)
-
 const USB_Descriptor_BOS_t PROGMEM BOSDescriptor = BOS_DESCRIPTOR(
 		(WEBUSB_DESCRIPTOR(WEBUSB_VENDOR_CODE, WEBUSB_LANDING_PAGE_INDEX))
 );
