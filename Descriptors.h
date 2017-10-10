@@ -48,16 +48,6 @@
 		#include "Config/AppConfig.h"
 
 	/* Type Defines: */
-		/** Type define for the device BOS descriptor structure. This must be defined in the
-		 *  application code, as the BOS descriptor may contain multiple sub-descriptors which
-		 *  vary between devices, and which describe the device's usage to the host.
-		 */
-		typedef struct
-		{
-			USB_Descriptor_BOS_Header_t         BOS_Header;
-			uint8_t                             CapabilityDescriptors[];
-		} USB_Descriptor_BOS_t;
-
 		/** Type define for the device configuration descriptor structure. This must be defined in the
 		 *  application code, as the configuration descriptor contains several sub-descriptors which
 		 *  vary between devices, and which describe the device's usage to the host.

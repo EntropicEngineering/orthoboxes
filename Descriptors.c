@@ -193,29 +193,17 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptorPokey =
  *  and is the base descriptor for accessing a family of related descriptors. It defines the number of 'sub' Device
  *  Capability Descriptors and the total length of itself and the sub-descriptors.
  */
-/*
-#define CAPABILITY_DESCRIPTORS \
-	BOS_CAPABILITY(WEBUSB_DESCRIPTOR(WEBUSB_VENDOR_CODE, WEBUSB_LANDING_PAGE_INDEX))
- */
 
-
-#define WEBUSB_BYTES WEBUSB_DESCRIPTOR(WEBUSB_VENDOR_CODE, WEBUSB_LANDING_PAGE_INDEX)
-
+//#define WEBUSB_BYTES WEBUSB_DESCRIPTOR(WEBUSB_VENDOR_CODE, WEBUSB_LANDING_PAGE_INDEX)
+//
 //#pragma message STRINGIFY_EXPANDED(BOS_DESCRIPTOR_COUNT((WEBUSB_BYTES)(WEBUSB_BYTES)))
 //
 //#define RESULT sizeof((BOS_CAPABILITY_DESCRIPTORS((WEBUSB_BYTES))))
 //#pragma message STRINGIFY_EXPANDED(RESULT)
 
-const USB_Descriptor_BOS_t PROGMEM BOSDescriptor = BOS_DESCRIPTOR((WEBUSB_BYTES));
-//{
-//	.BOS_Header = {
-//		.Header = {.Size = sizeof(USB_Descriptor_BOS_Header_t), .Type = DTYPE_BOS},
-//
-//		.NumberOfDeviceCapabilityDescriptors = BOS_NUMBER_OF_CAPABILITIES,
-//		.TotalLength = BOS_TOTAL_LENGTH
-//	},
-//	.CapabilityDescriptors = BOS_CAPABILITY_DESCRIPTORS
-//};
+const USB_Descriptor_BOS_t PROGMEM BOSDescriptor = BOS_DESCRIPTOR(
+		(WEBUSB_DESCRIPTOR(WEBUSB_VENDOR_CODE, WEBUSB_LANDING_PAGE_INDEX))
+);
 
 /** Configuration descriptor structure. This descriptor, located in FLASH memory, describes the usage
  *  of the device in one of its supported configurations, including information about any device interfaces
@@ -314,7 +302,6 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 	switch (DescriptorType)
 	{
 		case DTYPE_Device:
-			Serial_SendString("Returning Device Descriptor\n");
 			if (box_type == BOX_TYPE_POKEY) {
 				Address = &DeviceDescriptorPokey;
 			} else {
@@ -323,13 +310,10 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 			Size    = sizeof(USB_Descriptor_Device_t);
 			break;
 		case DTYPE_BOS:
-			Serial_SendString("Returning BOS Descriptor\n");
 			Address = &BOSDescriptor;
-			Size = pgm_read_byte(&BOSDescriptor.BOS_Header.TotalLength);
-			Serial_SendString("Returned Descriptor:"); Serial_SendData(Address, Size); Serial_SendByte(0x0A);
+			Size = pgm_read_byte(&BOSDescriptor.TotalLength);
 			break;
 		case DTYPE_Configuration:
-			Serial_SendString("Returning Configuration Descriptor\n");
 			Address = &ConfigurationDescriptor;
 			Size    = sizeof(USB_Descriptor_Configuration_t);
 			break;
