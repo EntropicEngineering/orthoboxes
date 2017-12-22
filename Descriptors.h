@@ -47,6 +47,8 @@
 
 		#include "Config/AppConfig.h"
 
+		#include "SimpleHID.h"
+
 	/* Type Defines: */
 		/** Type define for the device configuration descriptor structure. This must be defined in the
 		 *  application code, as the configuration descriptor contains several sub-descriptors which
@@ -77,9 +79,32 @@
 		 */
 		enum StringDescriptors_t
 		{
-			STRING_ID_Language     = 0, /**< Supported Languages string descriptor ID (must be zero) */
-			STRING_ID_Manufacturer = 1, /**< Manufacturer string ID */
-			STRING_ID_Product      = 2, /**< Product string ID */
+			STRING_ID_Language          = 0, /**< Supported Languages string descriptor ID (must be zero) */
+			STRING_ID_Manufacturer      = 1, /**< Manufacturer string ID */
+			STRING_ID_Product           = 2, /**< Product string ID */
+			STRING_ID_Serial_Number     = 3,
+			STRING_ID_timestamp         = 4,
+			STRING_ID_status            = 5,
+			STRING_ID_serial_number     = 6,
+			STRING_ID_config            = 7,
+			STRING_ID_timeout           = 8,
+			STRING_ID_error_threshold   = 9,
+			STRING_ID_item_order        = 10,
+			STRING_ID_wall_error        = 11,
+			STRING_ID_duration          = 12,
+			STRING_ID_drop_error        = 13,
+			STRING_ID_poke              = 14,
+			STRING_ID_location          = 15,
+			STRING_ID_peg               = 16
+			STRING_ID_new_state         = 17,
+			STRING_ID_tool              = 18,
+			STRING_ID_event             = 19,
+			STRING_ID_event_number      = 20,
+			STRING_ID_box_type          = 21,
+			STRING_ID_toggle_raw        = 22,
+			STRING_ID_raw_values        = 23,
+			STRING_ID_hardware_fault    = 24,
+			STRING_ID_peg_thresholds    = 25,
 		};
 
 		enum {
