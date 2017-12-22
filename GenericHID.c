@@ -96,13 +96,8 @@ uint8_t send_raw;
 uint8_t send_status;
 uint8_t status_sent;
 
-uint32_t serial_number;
-
 #define VALUE_TO_STRING(x) #x
 #define VALUE(x) VALUE_TO_STRING(x)
-
-/* DEVICE NAME */
-DEFINE_PSTRING(device_name_string, "orthobox");
 
 /** Main program entry point. This routine contains the overall program flow, including initial
  *  setup of all components and the main program loop.
@@ -305,16 +300,6 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
 			memcpy(Data, target_order, 10);
 			*ReportSize = MSG_CONFIG_SIZE;
 			return true;
-		/* } else if (*ReportID == DEVICE_NAME_REPORT_ID) {
-			int len = device_name_string.len;
-			len = len > 0xfe ? 0xfe : len;
-			Data[0] = len;
-			for (int i = 0; i < len; i++) {
-				Data[1+i] = pgm_read_byte(device_name_string.content + i);
-			}
-			*ReportSize = DEVICE_NAME_REPORT_SIZE;
-			return true;
-		} */
 		} else if (*ReportID == 69) {
 			Data[0] = get_box_type();
 			*ReportSize = 1;
@@ -338,10 +323,8 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
 			status_sent = 1;
 			//timestamp
 			time_to_wire(host_millis(), Data);
-			//serial number
-			uint32_to_wire(serial_number, Data+8);
 			//status
-			uint32_to_wire(status, Data+8+4);
+			uint32_to_wire(status, Data+8);
 			
 			*ReportID = MSG_STATUS_ID;
 			*ReportSize = MSG_STATUS_SIZE;

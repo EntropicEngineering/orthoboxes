@@ -57,7 +57,7 @@
 const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 {
 	HID_RI_USAGE_PAGE(16, SIMPLE_HID_USAGE_PAGE),
-	HID_RI_USAGE(0, SIMPLE_HID_APPLICATION_COLLECTION),
+	HID_RI_USAGE(8, SIMPLE_HID_APPLICATION_COLLECTION),
 	HID_RI_COLLECTION(8, 0x01), /* Application Collection */
 
 		/* Report Name: 'timestamp'
@@ -79,7 +79,6 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 		 * Report ID:   1
 		 * Report Type: Input
 		 * Report Data: { 'timestamp': Uint64,
-		 *                'serial_number': Uint32,
 		 *                'status': Uint8[4] }
 		 */
 		USAGE(SIMPLE_HID_OBJECT),
@@ -88,8 +87,6 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 			REPORT_ID(1),
 			STRING_INDEX(STRING_ID_timestamp),
 			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
-			STRING_INDEX(STRING_ID_serial_number),
-			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(32), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
 			STRING_INDEX(STRING_ID_status),
 			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(4), REPORT_COUNT(4), HID_RI_INPUT(8, HID_IOF_VARIABLE),
 		END_COLLECTION,
@@ -272,14 +269,19 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(16), REPORT_COUNT(6), HID_RI_FEATURE(8, HID_IOF_VARIABLE),
 		END_COLLECTION,
 
-	HID_RI_REPORT_ID(8,START_BOOTLOADER_REPORT_ID),
-	HID_RI_USAGE(8, 0x0a), // this probably has a proper value rather than "autoincrement"
-	HID_RI_LOGICAL_MINIMUM(8,0x00),
-	HID_RI_LOGICAL_MAXIMUM(16,0x00FF),
-	HID_RI_REPORT_SIZE(8, 0x08),
-	HID_RI_REPORT_COUNT(8, DEVICE_SERIALNUMBER_BYTE_LENGTH),
-	HID_RI_FEATURE(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE),
-	
+		/* Set Feature to this report triggers bootloader */
+		/* Report Name: bootloader
+		 * Report ID:   0xFF
+		 * Report Type: Feature (Set only)
+		 * Report Data: None
+		 */
+		USAGE(SIMPLE_HID_ARRAY),
+		STRING_INDEX(STRING_ID_bootloader),
+		REPORT_COLLECTION,
+			REPORT_ID(START_BOOTLOADER_REPORT_ID),
+			REPORT_SIZE(0), REPORT_COUNT(1), HID_RI_FEATURE(0),
+		END_COLLECTION,
+
 	HID_RI_END_COLLECTION(0),
 };
 
@@ -301,7 +303,7 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptor =
 
 	.VendorID               = 0x03EB,
 	.ProductID              = 0x2040,
-	.ReleaseNumber          = VERSION_BCD(0,0,1),
+	.ReleaseNumber          = VERSION_BCD(0,1,1),
 
 	.ManufacturerStrIndex   = STRING_ID_Manufacturer,
 	.ProductStrIndex        = STRING_ID_Product,
@@ -324,7 +326,7 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptorPokey =
 
 	.VendorID               = 0x03EB,
 	.ProductID              = 0x2041,
-	.ReleaseNumber          = VERSION_BCD(0,0,1),
+	.ReleaseNumber          = VERSION_BCD(0,1,1),
 
 	.ManufacturerStrIndex   = STRING_ID_Manufacturer,
 	.ProductStrIndex        = STRING_ID_Product,
@@ -376,8 +378,8 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 
 			.TotalEndpoints         = 1,
 
-			.Class                  = HID_CSCP_HIDClass,
-//			.Class                  = USB_CSCP_VendorSpecificClass,
+//			.Class                  = HID_CSCP_HIDClass,
+			.Class                  = USB_CSCP_VendorSpecificClass,
 			.SubClass               = HID_CSCP_NonBootSubclass,
 			.Protocol               = HID_CSCP_NonBootProtocol,
 
@@ -424,7 +426,36 @@ const USB_Descriptor_String_t PROGMEM ManufacturerString = USB_STRING_DESCRIPTOR
  */
 const USB_Descriptor_String_t PROGMEM ProductString = USB_STRING_DESCRIPTOR(L"Orthobox");
 
+const USB_Descriptor_String_t PROGMEM SerialNumber = USB_STRING_DESCRIPTOR(L"0xDEADBEEF");
+
+#define LSTR(str) L ## str
+#define N_VAR(var) const USB_Descriptor_String_t PROGMEM NAMED_##var = USB_STRING_DESCRIPTOR(LSTR(#var))
+
+N_VAR(timestamp);
+N_VAR(status);
+N_VAR(config);
+N_VAR(timeout);
+N_VAR(error_threshold);
+N_VAR(item_order);
+N_VAR(wall_error);
+N_VAR(duration);
+N_VAR(drop_error);
+N_VAR(poke);
+N_VAR(location);
+N_VAR(peg);
+N_VAR(new_state);
+N_VAR(tool);
+N_VAR(event);
+N_VAR(event_number);
+N_VAR(box_type);
+N_VAR(toggle_raw);
+N_VAR(raw_values);
+N_VAR(hardware_fault);
+N_VAR(peg_thresholds);
+N_VAR(bootloader);
+
 // TODO: Populate remaining string descriptors.
+#define N_CASE(var) case STRING_ID_##var: Address = &NAMED_##var; Size = pgm_read_byte(&NAMED_##var.Header.Size); break;
 
 /** This function is called by the library when in device mode, and must be overridden (see library "USB Descriptors"
  *  documentation) by the application code so that the address and size of a requested descriptor can be given
@@ -476,11 +507,31 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 					Size    = pgm_read_byte(&ProductString.Header.Size);
 					break;
 				case STRING_ID_Serial_Number:
-					// FIXME: Gus, what magic causes this to get set?
-					Address = NULL;
-					Size    = DEVICE_SERIALNUMBER_BYTE_LENGTH;
+					Address = &SerialNumber;
+					Size    = pgm_read_byte(&SerialNumber.Header.Size);
 					break;
-				// TODO: Create cases for the remaining string descriptors
+				N_CASE(timestamp);
+				N_CASE(status);
+				N_CASE(config);
+				N_CASE(timeout);
+				N_CASE(error_threshold);
+				N_CASE(item_order);
+				N_CASE(wall_error);
+				N_CASE(duration);
+				N_CASE(drop_error);
+				N_CASE(poke);
+				N_CASE(location);
+				N_CASE(peg);
+				N_CASE(new_state);
+				N_CASE(tool);
+				N_CASE(event);
+				N_CASE(event_number);
+				N_CASE(box_type);
+				N_CASE(toggle_raw);
+				N_CASE(raw_values);
+				N_CASE(hardware_fault);
+				N_CASE(peg_thresholds);
+				N_CASE(bootloader);
 			}
 
 			break;

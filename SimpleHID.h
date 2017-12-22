@@ -71,6 +71,8 @@
 		#define SIMPLE_HID_UTF8 0x0007
 		#endif
 
+		#define BYTES_LE(n) (uint8_t)(n % 256), (uint8_t)(n / 256)
+
 		/** \brief Convenience macro to easily create device capability platform descriptors for the WebUSB-HID platform. This
 		 *  macro is designed to be wrapped in parenthese and included in a sequece to the \ref BOS_DESCRIPTOR macro.
 		 *
@@ -84,8 +86,8 @@
 			DCTYPE_Platform, \
 			/* Reserved */ 0, \
 			SIMPLE_HID_PLATFORM_UUID, \
-			(uint8_t)(SIMPLE_HID_VERSION % 256), (uint8_t)(SIMPLE_HID_VERSION / 256), \
-			PAGE, COLLECTION, ARRAY, OBJECT, BITS, UINT, INT, FLOAT, UTF8
+			BYTES_LE(SIMPLE_HID_VERSION), \
+			BYTES_LE(PAGE), BYTES_LE(COLLECTION), BYTES_LE(ARRAY), BYTES_LE(OBJECT), BYTES_LE(BITS), BYTES_LE(UINT), BYTES_LE(INT), BYTES_LE(FLOAT), BYTES_LE(UTF8)
 
 		#define SIMPLE_HID_DESCRIPTOR_DEFAULT \
 			SIMPLE_HID_DESCRIPTOR_CUSTOM( \
@@ -97,7 +99,7 @@
 				SIMPLE_HID_UINT, \
 				SIMPLE_HID_INT, \
 				SIMPLE_HID_FLOAT, \
-				SIMPLE_HID_UTF8, \
+				SIMPLE_HID_UTF8 \
 			)
 
 #endif //_SIMPLE_HID_DEVICE_H
