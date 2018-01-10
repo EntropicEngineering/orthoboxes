@@ -219,7 +219,7 @@ const WebUSB_URL_Descriptor_t WebUSB_LandingPage = WEBUSB_URL_DESCRIPTOR(1, u8"w
 /** Event handler for the library USB Control Request reception event. */
 void EVENT_USB_Device_ControlRequest(void)
 {
-	Serial_SendString("Got Control Request:"); Serial_SendData(&USB_ControlRequest, sizeof(USB_ControlRequest)); Serial_SendByte(0x0A);
+//	Serial_SendString("Got Control Request:"); Serial_SendData(&USB_ControlRequest, sizeof(USB_ControlRequest)); Serial_SendByte(0x0A);
 
 	switch (USB_ControlRequest.bmRequestType) {
 
@@ -244,7 +244,6 @@ void EVENT_USB_Device_ControlRequest(void)
 						}
 						break;
 				}
-
 			} else {    /* Non-matching vendor code, request not coming from browser */
 				HID_Device_ProcessControlRequest(&Generic_HID_Interface);
 			}
@@ -277,7 +276,7 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
                                          void* ReportData,
                                          uint16_t* const ReportSize)
 {
-	uint8_t* Data        = (uint8_t*)ReportData;
+	uint8_t* Data  = (uint8_t*)ReportData;
 	uint16_t *u16d = (uint16_t*) ReportData;
 	//uint8_t  CurrLEDMask = LEDs_GetLEDs();
 	//uint16_t cb_wValue;

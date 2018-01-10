@@ -57,7 +57,7 @@
 const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 {
 	HID_RI_USAGE_PAGE(16, SIMPLE_HID_USAGE_PAGE),
-	HID_RI_USAGE(8, SIMPLE_HID_APPLICATION_COLLECTION),
+	HID_RI_USAGE(0, SIMPLE_HID_APPLICATION_COLLECTION), /* Can be size 0 because value is 0 */
 	HID_RI_COLLECTION(8, 0x01), /* Application Collection */
 
 		/* Report Name: 'timestamp'
@@ -65,10 +65,10 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 		 * Report Type: Output
 		 * Report Data: [ Uint64 ]
 		 */
-		USAGE(SIMPLE_HID_ARRAY), /* Technically redundant because Array is default */
 		STRING_INDEX(STRING_ID_timestamp),
+		REPORT_ID(1),
+		USAGE(SIMPLE_HID_ARRAY), /* Technically redundant because Array is default */
 		REPORT_COLLECTION,
-			REPORT_ID(1),
 			USAGE(SIMPLE_HID_UINT),
 			REPORT_SIZE(64),
 			REPORT_COUNT(1),
@@ -81,10 +81,10 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 		 * Report Data: { 'timestamp': Uint64,
 		 *                'status': Uint8[4] }
 		 */
-		USAGE(SIMPLE_HID_OBJECT),
 		STRING_INDEX(STRING_ID_status),
+		REPORT_ID(1),
+		USAGE(SIMPLE_HID_OBJECT),
 		REPORT_COLLECTION,
-			REPORT_ID(1),
 			STRING_INDEX(STRING_ID_timestamp),
 			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
 			STRING_INDEX(STRING_ID_status),
@@ -98,10 +98,10 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 		 *                'error_threshold': Uint16,
 		 *                'item_order': Uint8[10] }
 		 */
-		USAGE(SIMPLE_HID_OBJECT),
 		STRING_INDEX(STRING_ID_config),
+		REPORT_ID(2),
+		USAGE(SIMPLE_HID_OBJECT),
 		REPORT_COLLECTION,
-			REPORT_ID(2),
 			STRING_INDEX(STRING_ID_timeout),
 			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_FEATURE(8, HID_IOF_VARIABLE),
 			STRING_INDEX(STRING_ID_error_threshold),
@@ -116,10 +116,10 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 		 * Report Data: { 'timestamp': Uint64,
 		 *                'duration': Uint32 }
 		 */
-		USAGE(SIMPLE_HID_OBJECT),
 		STRING_INDEX(STRING_ID_wall_error),
+		REPORT_ID(12),
+		USAGE(SIMPLE_HID_OBJECT),
 		REPORT_COLLECTION,
-			REPORT_ID(12),
 			STRING_INDEX(STRING_ID_timestamp),
 			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
 			STRING_INDEX(STRING_ID_duration),
@@ -131,10 +131,10 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 		 * Report Type: Input
 		 * Report Data: { timestamp: Uint64 }
 		 */
-		USAGE(SIMPLE_HID_OBJECT),
 		STRING_INDEX(STRING_ID_drop_error),
+		REPORT_ID(13),
+		USAGE(SIMPLE_HID_OBJECT),
 		REPORT_COLLECTION,
-			REPORT_ID(13),
 			STRING_INDEX(STRING_ID_timestamp),
 			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
 		END_COLLECTION,
@@ -145,10 +145,10 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 		 * Report Data: { timestamp: Uint64,
 		 *                location: Uint8 }
 		 */
-		USAGE(SIMPLE_HID_OBJECT),
 		STRING_INDEX(STRING_ID_poke),
+		REPORT_ID(14),
+		USAGE(SIMPLE_HID_OBJECT),
 		REPORT_COLLECTION,
-			REPORT_ID(14),
 			STRING_INDEX(STRING_ID_timestamp),
 			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
 			STRING_INDEX(STRING_ID_location),
@@ -162,10 +162,10 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 		 *                location: Uint8,
 		 *                new_state: Uint8 }
 		 */
-		USAGE(SIMPLE_HID_OBJECT),
 		STRING_INDEX(STRING_ID_peg),
+		REPORT_ID(15),
+		USAGE(SIMPLE_HID_OBJECT),
 		REPORT_COLLECTION,
-			REPORT_ID(15),
 			STRING_INDEX(STRING_ID_timestamp),
 			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
 			STRING_INDEX(STRING_ID_location),
@@ -180,10 +180,10 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 		 * Report Data: { timestamp: Uint64,
 		 *                new_state: Uint8 }
 		 */
-		USAGE(SIMPLE_HID_OBJECT),
 		STRING_INDEX(STRING_ID_tool),
+		REPORT_ID(16),
+		USAGE(SIMPLE_HID_OBJECT),
 		REPORT_COLLECTION,
-			REPORT_ID(16),
 			STRING_INDEX(STRING_ID_timestamp),
 			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
 			STRING_INDEX(STRING_ID_new_state),
@@ -197,10 +197,10 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 		 * Report Data: { timestamp: Uint64,
 		 *                event_number: Uint8 }
 		 */
-		USAGE(SIMPLE_HID_OBJECT),
 		STRING_INDEX(STRING_ID_event),
+		REPORT_ID(17),
+		USAGE(SIMPLE_HID_OBJECT),
 		REPORT_COLLECTION,
-			REPORT_ID(17),
 			STRING_INDEX(STRING_ID_timestamp),
 			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
 			STRING_INDEX(STRING_ID_event_number),
@@ -212,10 +212,10 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 		 * Report Type: Feature
 		 * Report Data: { box_type: Uint8 }
 		 */
-		USAGE(SIMPLE_HID_OBJECT),
 		STRING_INDEX(STRING_ID_box_type),
+		REPORT_ID(0x45),
+		USAGE(SIMPLE_HID_OBJECT),
 		REPORT_COLLECTION,
-			REPORT_ID(0x45),
 			STRING_INDEX(STRING_ID_box_type),
 			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(8), REPORT_COUNT(1), HID_RI_FEATURE(8, HID_IOF_VARIABLE),
 		END_COLLECTION,
@@ -225,10 +225,10 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 		 * Report Type: Output
 		 * Report Data: None
 		 */
-		USAGE(SIMPLE_HID_ARRAY),
+		REPORT_ID(0x45),
 		STRING_INDEX(STRING_ID_toggle_raw),
+		USAGE(SIMPLE_HID_ARRAY),
 		REPORT_COLLECTION,
-			REPORT_ID(0x45),
 			REPORT_SIZE(0), REPORT_COUNT(1), HID_RI_OUTPUT(0),
 		END_COLLECTION,
 
@@ -237,10 +237,10 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 		 * Report Type: Input
 		 * Report Data: [ ...Uint16[10], ...Uint8[10] ]
 		 */
-		USAGE(SIMPLE_HID_ARRAY),
 		STRING_INDEX(STRING_ID_raw_values),
+		REPORT_ID(0x45),
+		USAGE(SIMPLE_HID_ARRAY),
 		REPORT_COLLECTION,
-			REPORT_ID(0x45),
 			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(16), REPORT_COUNT(10), HID_RI_INPUT(8, HID_IOF_VARIABLE),
 			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(8), REPORT_COUNT(10), HID_RI_INPUT(8, HID_IOF_VARIABLE),
 		END_COLLECTION,
@@ -250,10 +250,10 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 		 * Report Type: Feature
 		 * Report Data: [ Uint64 ]
 		 */
-		USAGE(SIMPLE_HID_ARRAY),
 		STRING_INDEX(STRING_ID_hardware_fault),
+		REPORT_ID(70),
+		USAGE(SIMPLE_HID_ARRAY),
 		REPORT_COLLECTION,
-			REPORT_ID(70),
 			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_FEATURE(8, HID_IOF_VARIABLE),
 		END_COLLECTION,
 
@@ -262,10 +262,10 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 		 * Report Type: Feature
 		 * Report Data: [ ...Uint16[6] ]
 		 */
-		USAGE(SIMPLE_HID_ARRAY),
 		STRING_INDEX(STRING_ID_peg_thresholds),
+		REPORT_ID(71),
+		USAGE(SIMPLE_HID_ARRAY),
 		REPORT_COLLECTION,
-			REPORT_ID(71),
 			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(16), REPORT_COUNT(6), HID_RI_FEATURE(8, HID_IOF_VARIABLE),
 		END_COLLECTION,
 
@@ -275,10 +275,10 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 		 * Report Type: Feature (Set only)
 		 * Report Data: None
 		 */
-		USAGE(SIMPLE_HID_ARRAY),
 		STRING_INDEX(STRING_ID_bootloader),
+		REPORT_ID(START_BOOTLOADER_REPORT_ID),
+		USAGE(SIMPLE_HID_ARRAY),
 		REPORT_COLLECTION,
-			REPORT_ID(START_BOOTLOADER_REPORT_ID),
 			REPORT_SIZE(0), REPORT_COUNT(1), HID_RI_FEATURE(0),
 		END_COLLECTION,
 
@@ -362,7 +362,7 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 			.TotalInterfaces        = 1,
 
 			.ConfigurationNumber    = 1,
-			.ConfigurationStrIndex  = NO_DESCRIPTOR,
+			.ConfigurationStrIndex  = STRING_ID_Product,
 
 			.ConfigAttributes       = (USB_CONFIG_ATTR_RESERVED | USB_CONFIG_ATTR_SELFPOWERED),
 
@@ -383,7 +383,7 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 			.SubClass               = HID_CSCP_NonBootSubclass,
 			.Protocol               = HID_CSCP_NonBootProtocol,
 
-			.InterfaceStrIndex      = NO_DESCRIPTOR
+			.InterfaceStrIndex      = STRING_ID_Product
 		},
 
 	.HID_GenericHID =
