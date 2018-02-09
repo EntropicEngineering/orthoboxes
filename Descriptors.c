@@ -94,7 +94,7 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 		/* Report Name: 'config'
 		 * Report ID:   2
 		 * Report Type: Feature
-		 * Report Data: { 'timeout': Uint64,
+		 * Report Data: { 'timeout': Uint32,
 		 *                'error_threshold': Uint16,
 		 *                'item_order': Uint8[10] }
 		 */
@@ -103,7 +103,7 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 		USAGE(SIMPLE_HID_OBJECT),
 		REPORT_COLLECTION,
 			STRING_INDEX(STRING_ID_timeout),
-			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_FEATURE(8, HID_IOF_VARIABLE),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(32), REPORT_COUNT(1), HID_RI_FEATURE(8, HID_IOF_VARIABLE),
 			STRING_INDEX(STRING_ID_error_threshold),
 			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(16), REPORT_COUNT(1), HID_RI_FEATURE(8, HID_IOF_VARIABLE),
 			STRING_INDEX(STRING_ID_item_order),

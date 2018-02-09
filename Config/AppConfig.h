@@ -53,8 +53,6 @@
 	#define START_BOOTLOADER_REPORT_ID 0xff
 
 #define TIMESTAMP_OFFSET_FR_ID 1
-#define MSG_ADMIN_ID 1
-#define MSG_ADMIN_SIZE 144
 
 #define MSG_STATUS_ID 1
 #define MSG_STATUS_SIZE (8+4)
