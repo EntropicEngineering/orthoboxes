@@ -13,6 +13,14 @@ void uint32_to_wire(uint32_t v, uint8_t w[])
 		w[i] = ubv.u8s[3-i];
 	}
 }
+uint32_t uint32_from_wire(const uint8_t w[])
+{
+	union uint32_byteview ubv;
+	for (int i = 0; i < 4; i++) {
+		ubv.u8s[3-i] = w[i];
+	}
+	return ubv.val;
+}
 void uint16_to_wire(uint16_t v, uint8_t w[])
 {
 	w[0] = v>>8;

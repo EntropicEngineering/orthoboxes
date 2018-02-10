@@ -292,8 +292,8 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
 	case HID_REPORT_ITEM_Feature:
 		if (*ReportID == MSG_CONFIG_ID) {
 			//return the current timeout
-			time_to_wire(timeout, Data); // TODO this is 64 bits, timeout is 32
-			Data+=8;
+			uint32_to_wire(timeout, Data);
+			Data+=4;
 			uint16_to_wire(wall_error_timeout, Data);
 			Data+=2;
 			memcpy(Data, target_order, 10);
@@ -457,10 +457,8 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
 			set_box_type(Data[0]);
 		} else if (ReportID == 2) {
 			//set timestamp, wall timeout, and task order
-			TIME_t oset;
-			oset = time_from_wire(Data);
-			set_time_oset(oset);
-			Data+=8;
+			timeout = uint32_from_wire(Data);
+			Data+=4;
 			wall_error_timeout = Data[0]<<8 | Data[1];
 			Data+=2;
 			int allmax = 1;

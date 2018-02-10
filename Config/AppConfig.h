@@ -58,7 +58,7 @@
 #define MSG_STATUS_SIZE (8+4)
 
 #define MSG_CONFIG_ID 2
-#define MSG_CONFIG_SIZE (8+2+10*1)
+#define MSG_CONFIG_SIZE (4+2+10*1)
 
 #define MSG_WALL_ERROR_ID 12
 #define MSG_WALL_ERROR_SIZE (8+4)
