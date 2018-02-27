@@ -455,7 +455,7 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
 			Jump_To_Bootloader();
 		} else if (ReportID == 69) {
 			set_box_type(Data[0]);
-		} else if (ReportID == 2) {
+		} else if (ReportID == MSG_CONFIG_ID) {
 			//set timestamp, wall timeout, and task order
 			timeout = uint32_from_wire(Data);
 			Data+=4;
