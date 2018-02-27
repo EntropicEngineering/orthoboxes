@@ -60,6 +60,25 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 	HID_RI_USAGE(0, SIMPLE_HID_APPLICATION_COLLECTION), /* Can be size 0 because value is 0 */
 	HID_RI_COLLECTION(8, 0x01), /* Application Collection */
 
+		/* Report Name: 'config'
+		 * Report ID:   1
+		 * Report Type: Feature
+		 * Report Data: { 'timeout': Uint32,
+		 *                'error_threshold': Uint16,
+		 *                'item_order': Uint8[10] }
+		 */
+		STRING_INDEX(STRING_ID_config),
+		REPORT_ID(1),
+		USAGE(SIMPLE_HID_OBJECT),
+		REPORT_COLLECTION,
+			STRING_INDEX(STRING_ID_timeout),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(32), REPORT_COUNT(1), HID_RI_FEATURE(8, HID_IOF_VARIABLE),
+			STRING_INDEX(STRING_ID_error_threshold),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(16), REPORT_COUNT(1), HID_RI_FEATURE(8, HID_IOF_VARIABLE),
+			STRING_INDEX(STRING_ID_item_order),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(8), REPORT_COUNT(10), HID_RI_FEATURE(8, HID_IOF_VARIABLE),
+		END_COLLECTION,
+
 		/* Report Name: 'timestamp'
 		 * Report ID:   1
 		 * Report Type: Output
@@ -89,25 +108,6 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
 			STRING_INDEX(STRING_ID_status),
 			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(4), REPORT_COUNT(4), HID_RI_INPUT(8, HID_IOF_VARIABLE),
-		END_COLLECTION,
-
-		/* Report Name: 'config'
-		 * Report ID:   2
-		 * Report Type: Feature
-		 * Report Data: { 'timeout': Uint32,
-		 *                'error_threshold': Uint16,
-		 *                'item_order': Uint8[10] }
-		 */
-		STRING_INDEX(STRING_ID_config),
-		REPORT_ID(2),
-		USAGE(SIMPLE_HID_OBJECT),
-		REPORT_COLLECTION,
-			STRING_INDEX(STRING_ID_timeout),
-			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(32), REPORT_COUNT(1), HID_RI_FEATURE(8, HID_IOF_VARIABLE),
-			STRING_INDEX(STRING_ID_error_threshold),
-			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(16), REPORT_COUNT(1), HID_RI_FEATURE(8, HID_IOF_VARIABLE),
-			STRING_INDEX(STRING_ID_item_order),
-			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(8), REPORT_COUNT(10), HID_RI_FEATURE(8, HID_IOF_VARIABLE),
 		END_COLLECTION,
 
 		/* Report Name: 'wall_error'
