@@ -20,7 +20,6 @@ struct peg {
 	uint8_t state;
 };
 
-uint16_t times_pegstm_called;
 struct peg pegs[PEG_COUNT];
 
 void
@@ -42,7 +41,6 @@ read_peggy_thresholds(void);
 uint8_t peg_msg_state;
 uint8_t peg_msg_pending;
 TIME_t peg_stamps[PEG_COUNT];
-uint16_t peg_status;
 
 void
 set_peg_msg(uint8_t peg, uint8_t state);
