@@ -1,0 +1,41 @@
+add serial number
+	store it in EEPROM
+	make it a working string descriptor, noteworthy because it must be in RAM
+	on startup: read from EEPROM into ram
+	add command to update firmware
+		maybe not?
+
+use ben's console API to interact with new non-HID boxes
+
+Definitely a firmware bug: When the working (+ extra light) box was given all 255 as config to do random, it would successfully complete after the first poke.
+	this only happened at sawbones
+	it was on at the same time as another one
+	slight variation where it completes totally automatically, might not be related. (aka completes instantly)
+
+inaccessible light turns on: matt: by the way this is the bug I mentioned to you repeatedly that the UMN and IA students were reporting that you insisted you already fixed
+
+"Timestamp isn’t behaving as expected" from ben, no info otherwise
+
+self-calibration? some stuff written on whiteboard behind me
+
+peggy and pokey use the exact same report descriptor
+	which means that the timestamp report on peggy has an extra ten bytes for pokey order that are unused and annoying
+
+Bootloader
+	Keep / replace?
+		use a USB DFU one?
+	Means to update bootloader
+	Handle Serial Number in progmem
+	current situation:
+		ATMEL uses a custom variant of DFU
+			supported by dfu-programmer
+		there is a WebUSB implementation of dfu-util, a spec compliant DFU
+		dfu-programmer works
+			bootloading confirmed
+			launching unconfirmed
+				not responding to dfu-programmer atmega32u4 launch (with or without --no-reset)
+		dfu-util doesn't
+			runs a different protocol
+		web dfu-util doesn't
+			same protocol as dfu-util presumably
+		
