@@ -54,11 +54,11 @@
  *  the device will send, and what it may be sent back from the host. Refer to the HID specification for
  *  more details on HID report descriptors.
  */
-const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
+const USB_Descriptor_HIDReport_Datatype_t PROGMEM HID_Descriptor_Pokey[] =
 {
-	HID_RI_USAGE_PAGE(16, SIMPLE_HID_USAGE_PAGE),
-	HID_RI_USAGE(0, SIMPLE_HID_APPLICATION_COLLECTION), /* Can be size 0 because value is 0 */
-	HID_RI_COLLECTION(8, 0x01), /* Application Collection */
+		HID_RI_USAGE_PAGE(16, SIMPLE_HID_USAGE_PAGE),
+		HID_RI_USAGE(0, SIMPLE_HID_APPLICATION_COLLECTION), /* Can be size 0 because value is 0 */
+		HID_RI_COLLECTION(8, 0x01), /* Application Collection */
 
 		/* Report Name: 'config'
 		 * Report ID:   1
@@ -88,10 +88,232 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 		REPORT_ID(1),
 		USAGE(SIMPLE_HID_ARRAY), /* Technically redundant because Array is default */
 		REPORT_COLLECTION,
-			USAGE(SIMPLE_HID_UINT),
-			REPORT_SIZE(64),
-			REPORT_COUNT(1),
-			HID_RI_OUTPUT(8, HID_IOF_VARIABLE),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_OUTPUT(8, HID_IOF_VARIABLE),
+		END_COLLECTION,
+
+		/* Report Name: 'status'
+		 * Report ID:   1
+		 * Report Type: Input
+		 * Report Data: { 'timestamp': Uint64,
+		 *                'status': Uint8[4] }
+		 */
+		STRING_INDEX(STRING_ID_status),
+		REPORT_ID(1),
+		USAGE(SIMPLE_HID_OBJECT),
+		REPORT_COLLECTION,
+			STRING_INDEX(STRING_ID_timestamp),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
+			STRING_INDEX(STRING_ID_status),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(4), REPORT_COUNT(4), HID_RI_INPUT(8, HID_IOF_VARIABLE),
+		END_COLLECTION,
+
+		/* Report Name: 'wall_error'
+		 * Report ID:   12
+		 * Report Type: Input
+		 * Report Data: { 'timestamp': Uint64,
+		 *                'duration': Uint32 }
+		 */
+		STRING_INDEX(STRING_ID_wall_error),
+		REPORT_ID(12),
+		USAGE(SIMPLE_HID_OBJECT),
+		REPORT_COLLECTION,
+			STRING_INDEX(STRING_ID_timestamp),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
+			STRING_INDEX(STRING_ID_duration),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(32), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
+		END_COLLECTION,
+
+		/* Report Name: drop_error
+		 * Report ID:   13
+		 * Report Type: Input
+		 * Report Data: { timestamp: Uint64 }
+		 */
+		STRING_INDEX(STRING_ID_drop_error),
+		REPORT_ID(13),
+		USAGE(SIMPLE_HID_OBJECT),
+		REPORT_COLLECTION,
+			STRING_INDEX(STRING_ID_timestamp),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
+		END_COLLECTION,
+
+		/* Report Name: poke
+		 * Report ID:   14
+		 * Report Type: Input
+		 * Report Data: { timestamp: Uint64,
+		 *                location: Uint8 }
+		 */
+		STRING_INDEX(STRING_ID_poke),
+		REPORT_ID(14),
+		USAGE(SIMPLE_HID_OBJECT),
+		REPORT_COLLECTION,
+			STRING_INDEX(STRING_ID_timestamp),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
+			STRING_INDEX(STRING_ID_location),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(8), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
+		END_COLLECTION,
+
+		/* Report Name: peg
+		 * Report ID:   15
+		 * Report Type: Input
+		 * Report Data: { timestamp: Uint64,
+		 *                location: Uint8,
+		 *                new_state: Uint8 }
+		 */
+		STRING_INDEX(STRING_ID_peg),
+		REPORT_ID(15),
+		USAGE(SIMPLE_HID_OBJECT),
+		REPORT_COLLECTION,
+			STRING_INDEX(STRING_ID_timestamp),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
+			STRING_INDEX(STRING_ID_location),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(8), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
+			STRING_INDEX(STRING_ID_new_state),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(8), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
+		END_COLLECTION,
+
+		/* Report Name: tool
+		 * Report ID:   16
+		 * Report Type: Input
+		 * Report Data: { timestamp: Uint64,
+		 *                new_state: Uint8 }
+		 */
+		STRING_INDEX(STRING_ID_tool),
+		REPORT_ID(16),
+		USAGE(SIMPLE_HID_OBJECT),
+		REPORT_COLLECTION,
+			STRING_INDEX(STRING_ID_timestamp),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
+			STRING_INDEX(STRING_ID_new_state),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(8), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
+		END_COLLECTION,
+
+		/* Debug Reports */
+		/* Report Name: event
+		 * Report ID:   17
+		 * Report Type: Input
+		 * Report Data: { timestamp: Uint64,
+		 *                event_number: Uint8 }
+		 */
+		STRING_INDEX(STRING_ID_event),
+		REPORT_ID(17),
+		USAGE(SIMPLE_HID_OBJECT),
+		REPORT_COLLECTION,
+			STRING_INDEX(STRING_ID_timestamp),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
+			STRING_INDEX(STRING_ID_event_number),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(8), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
+		END_COLLECTION,
+
+		/* Report Name: box_type
+		 * Report ID:   0x45
+		 * Report Type: Feature
+		 * Report Data: { box_type: Uint8 }
+		 */
+		STRING_INDEX(STRING_ID_box_type),
+		REPORT_ID(0x45),
+		USAGE(SIMPLE_HID_OBJECT),
+		REPORT_COLLECTION,
+			STRING_INDEX(STRING_ID_box_type),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(8), REPORT_COUNT(1), HID_RI_FEATURE(8, HID_IOF_VARIABLE),
+		END_COLLECTION,
+
+		/* Report Name: toggle_raw
+		 * Report ID:   0x45
+		 * Report Type: Output
+		 * Report Data: None
+		 */
+		REPORT_ID(0x45),
+		STRING_INDEX(STRING_ID_toggle_raw),
+		USAGE(SIMPLE_HID_ARRAY),
+		REPORT_COLLECTION,
+			REPORT_SIZE(0), REPORT_COUNT(1), HID_RI_OUTPUT(0),
+		END_COLLECTION,
+
+		/* Report Name: raw_values
+		 * Report ID:   0x45
+		 * Report Type: Input
+		 * Report Data: [ ...Uint16[10], ...Uint8[10] ]
+		 */
+		STRING_INDEX(STRING_ID_raw_values),
+		REPORT_ID(0x45),
+		USAGE(SIMPLE_HID_ARRAY),
+		REPORT_COLLECTION,
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(16), REPORT_COUNT(10), HID_RI_INPUT(8, HID_IOF_VARIABLE),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(8), REPORT_COUNT(10), HID_RI_INPUT(8, HID_IOF_VARIABLE),
+		END_COLLECTION,
+
+		/* Report Name: hardware_fault
+		 * Report ID:   70
+		 * Report Type: Feature
+		 * Report Data: [ Uint64 ]
+		 */
+		STRING_INDEX(STRING_ID_hardware_fault),
+		REPORT_ID(70),
+		USAGE(SIMPLE_HID_ARRAY),
+		REPORT_COLLECTION,
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_FEATURE(8, HID_IOF_VARIABLE),
+		END_COLLECTION,
+
+		/* Report Name: peg_thresholds
+		 * Report ID:   71
+		 * Report Type: Feature
+		 * Report Data: [ ...Uint16[6] ]
+		 */
+		STRING_INDEX(STRING_ID_peg_thresholds),
+		REPORT_ID(71),
+		USAGE(SIMPLE_HID_ARRAY),
+		REPORT_COLLECTION,
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(16), REPORT_COUNT(6), HID_RI_FEATURE(8, HID_IOF_VARIABLE),
+		END_COLLECTION,
+
+		/* Set Feature to this report triggers bootloader */
+		/* Report Name: bootloader
+		 * Report ID:   0xFF
+		 * Report Type: Feature (Set only)
+		 * Report Data: None
+		 */
+		STRING_INDEX(STRING_ID_bootloader),
+		REPORT_ID(START_BOOTLOADER_REPORT_ID),
+		USAGE(SIMPLE_HID_ARRAY),
+		REPORT_COLLECTION,
+			REPORT_SIZE(0), REPORT_COUNT(1), HID_RI_FEATURE(0),
+		END_COLLECTION,
+
+	HID_RI_END_COLLECTION(0),
+};
+
+const USB_Descriptor_HIDReport_Datatype_t PROGMEM HID_Descriptor_Peggy[] =
+{
+	HID_RI_USAGE_PAGE(16, SIMPLE_HID_USAGE_PAGE),
+	HID_RI_USAGE(0, SIMPLE_HID_APPLICATION_COLLECTION), /* Can be size 0 because value is 0 */
+	HID_RI_COLLECTION(8, 0x01), /* Application Collection */
+
+		/* Report Name: 'config'
+		 * Report ID:   1
+		 * Report Type: Feature
+		 * Report Data: { 'timeout': Uint32,
+		 *                'error_threshold': Uint16 }
+		 */
+		STRING_INDEX(STRING_ID_config),
+		REPORT_ID(1),
+		USAGE(SIMPLE_HID_OBJECT),
+		REPORT_COLLECTION,
+			STRING_INDEX(STRING_ID_timeout),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(32), REPORT_COUNT(1), HID_RI_FEATURE(8, HID_IOF_VARIABLE),
+			STRING_INDEX(STRING_ID_error_threshold),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(16), REPORT_COUNT(1), HID_RI_FEATURE(8, HID_IOF_VARIABLE),
+		END_COLLECTION,
+
+		/* Report Name: 'timestamp'
+		 * Report ID:   1
+		 * Report Type: Output
+		 * Report Data: [ Uint64 ]
+		 */
+		STRING_INDEX(STRING_ID_timestamp),
+		REPORT_ID(1),
+		USAGE(SIMPLE_HID_ARRAY), /* Technically redundant because Array is default */
+		REPORT_COLLECTION,
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_OUTPUT(8, HID_IOF_VARIABLE),
 		END_COLLECTION,
 
 		/* Report Name: 'status'
@@ -343,6 +565,7 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptorPokey =
  */
 
 const USB_Descriptor_BOS_t PROGMEM BOSDescriptor = BOS_DESCRIPTOR(
+	(MS_OS_20_PLATFORM_DESCRIPTOR(MS_OS_20_VENDOR_CODE, MS_OS_20_DESCRIPTOR_SET_TOTAL_LENGTH))
 	(WEBUSB_DESCRIPTOR(WEBUSB_VENDOR_CODE, WEBUSB_LANDING_PAGE_INDEX))
 	(SIMPLE_HID_DESCRIPTOR_DEFAULT)
 );
@@ -386,7 +609,7 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 			.InterfaceStrIndex      = STRING_ID_Product
 		},
 
-	.HID_GenericHID =
+/*	.HID_GenericHID =
 		{
 			.Header                 = {.Size = sizeof(USB_HID_Descriptor_HID_t), .Type = HID_DTYPE_HID},
 
@@ -395,7 +618,7 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 			.TotalReportDescriptors = 1,
 			.HIDReportType          = HID_DTYPE_Report,
 			.HIDReportLength        = sizeof(GenericReport)
-		},
+		}, */
 
 	.HID_ReportINEndpoint =
 		{
@@ -406,6 +629,26 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
 			.EndpointSize           = GENERIC_EPSIZE,
 			.PollingIntervalMS      = 0x05
 		},
+};
+
+const USB_HID_Descriptor_HID_t PROGMEM Pokey_HID = {
+		.Header                 = {.Size = sizeof(USB_HID_Descriptor_HID_t), .Type = HID_DTYPE_HID},
+
+		.HIDSpec                = VERSION_BCD(1,1,1),
+		.CountryCode            = 0x00,
+		.TotalReportDescriptors = 1,
+		.HIDReportType          = HID_DTYPE_Report,
+		.HIDReportLength        = sizeof(HID_Descriptor_Pokey)
+};
+
+const USB_HID_Descriptor_HID_t PROGMEM Peggy_HID = {
+		.Header                 = {.Size = sizeof(USB_HID_Descriptor_HID_t), .Type = HID_DTYPE_HID},
+
+		.HIDSpec                = VERSION_BCD(1,1,1),
+		.CountryCode            = 0x00,
+		.TotalReportDescriptors = 1,
+		.HIDReportType          = HID_DTYPE_Report,
+		.HIDReportLength        = sizeof(HID_Descriptor_Peggy)
 };
 
 /** Language descriptor structure. This descriptor, located in FLASH memory, is returned when the host requests
@@ -536,12 +779,21 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 
 			break;
 		case HID_DTYPE_HID:
-			Address = &ConfigurationDescriptor.HID_GenericHID;
+			if (box_type == BOX_TYPE_POKEY) {
+				Address = &Pokey_HID;
+			} else {
+				Address = &Peggy_HID;
+			}
 			Size    = sizeof(USB_HID_Descriptor_HID_t);
 			break;
 		case HID_DTYPE_Report:
-			Address = &GenericReport;
-			Size    = sizeof(GenericReport);
+			if (box_type == BOX_TYPE_POKEY) {
+				Address = &HID_Descriptor_Pokey;
+				Size = sizeof(HID_Descriptor_Pokey);
+			} else {
+				Address = &HID_Descriptor_Peggy;
+				Size = sizeof(HID_Descriptor_Peggy);
+			}
 			break;
 		default:
 			Serial_SendString("Uncaught Descriptor Request: "); Serial_SendByte(DescriptorType); Serial_SendByte(0x0A);

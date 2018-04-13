@@ -7,9 +7,11 @@
 
 #include <LUFA/Drivers/USB/USB.h>
 
-#define WEBUSB_VERSION VERSION_BCD(1, 0, 0)
+#ifndef WORD_TO_BYTES_LE
+#define WORD_TO_BYTES_LE(n) n % 256, (n / 256) % 256
+#endif
 
-#define WEBUSB_REQUEST_TYPE (REQDIR_DEVICETOHOST | REQTYPE_VENDOR | REQREC_DEVICE)
+#define WEBUSB_VERSION VERSION_BCD(1, 0, 0)
 
 #define WEBUSB_PLATFORM_DESCRIPTOR_SIZE 24
 
@@ -28,9 +30,12 @@
 	DCTYPE_Platform, \
 	/* Reserved */ 0, \
 	WEBUSB_PLATFORM_UUID, \
-	(uint8_t)(WEBUSB_VERSION % 256), (uint8_t)(WEBUSB_VERSION / 256), \
+	WORD_TO_BYTES_LE(WEBUSB_VERSION), \
 	VendorCode, \
 	LandingPageIndex
+
+
+
 
 /** \brief Convenience macro to easily create \ref WebUSB_URL_Descriptor_t instances from a wide character string.
  *

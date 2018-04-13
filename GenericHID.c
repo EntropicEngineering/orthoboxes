@@ -211,41 +211,80 @@ void EVENT_USB_Device_ConfigurationChanged(void)
 	LEDs_SetAllLEDs(ConfigSuccess ? LEDMASK_USB_READY : LEDMASK_USB_ERROR);
 }
 
+/** Microsoft OS 2.0 Descriptor. This is used by Windows to select the USB driver for the device.
+ *
+ *  For WebUSB in Chrome, the correct device is WINUSB.
+ */
+const MS_OS_20_Descriptor_t PROGMEM MS_OS_20_Descriptor =
+{
+	.Header =
+		{
+			.Length = CPU_TO_LE16(10),
+			.DescriptorType = CPU_TO_LE16(MS_OS_20_SET_HEADER_DESCRIPTOR),
+			.WindowsVersion = MS_OS_20_WINDOWS_VERSION,
+			.TotalLength = CPU_TO_LE16(MS_OS_20_DESCRIPTOR_SET_TOTAL_LENGTH)
+		},
+
+	.CompatibleID =
+		{
+			.Length = CPU_TO_LE16(20),
+			.DescriptorType = CPU_TO_LE16(MS_OS_20_FEATURE_COMPATBLE_ID),
+			.CompatibleID = u8"WINUSB\x00", // Automatically null-terminated to 8 bytes
+			.SubCompatibleID = {0, 0, 0, 0, 0, 0, 0, 0}
+		}
+};
+
 /** URL descriptor string. This is a UTF-8 string containing a URL excluding the prefix. At least one of these must be
  * 	defined and returned when the Landing Page descriptor index is requested.
  */
-const WebUSB_URL_Descriptor_t WebUSB_LandingPage = WEBUSB_URL_DESCRIPTOR(1, u8"www.xlms.org");
+const WebUSB_URL_Descriptor_t PROGMEM WebUSB_LandingPage = WEBUSB_URL_DESCRIPTOR(1, u8"www.xlms.org");
 
 /** Event handler for the library USB Control Request reception event. */
 void EVENT_USB_Device_ControlRequest(void)
 {
 //	Serial_SendString("Got Control Request:"); Serial_SendData(&USB_ControlRequest, sizeof(USB_ControlRequest)); Serial_SendByte(0x0A);
-
 	switch (USB_ControlRequest.bmRequestType) {
-
-		case WEBUSB_REQUEST_TYPE:
-			if (USB_ControlRequest.bRequest == WEBUSB_VENDOR_CODE) {
-
-				switch (USB_ControlRequest.wIndex) {
-					case WebUSB_RTYPE_GetURL:
-						/* Free the endpoint for the next Request */
-						Endpoint_ClearSETUP();
-
-						switch (USB_ControlRequest.wValue) {
-							case WEBUSB_LANDING_PAGE_INDEX:
-								/* Write the descriptor data to the control endpoint */
-								Endpoint_Write_Control_Stream_LE(&WebUSB_LandingPage, WebUSB_LandingPage.Header.Size);
-								/* Release the endpoint after transaction. */
-								Endpoint_ClearOUT();
-								break;
-							default:    /* Stall transfer on invalid index. */
-								Endpoint_StallTransaction();
-								break;
-						}
-						break;
-				}
-			} else {    /* Non-matching vendor code, request not coming from browser */
-				HID_Device_ProcessControlRequest(&Generic_HID_Interface);
+		/* Handle Vendor Requests for WebUSB & MS OS Descriptors */
+		case (REQDIR_DEVICETOHOST | REQTYPE_VENDOR | REQREC_DEVICE):
+			/* Free the endpoint for the next Request */
+			Endpoint_ClearSETUP();
+			switch (USB_ControlRequest.bRequest) {
+				case WEBUSB_VENDOR_CODE:
+					switch (USB_ControlRequest.wIndex) {
+						case WebUSB_RTYPE_GetURL:
+							switch (USB_ControlRequest.wValue) {
+								case WEBUSB_LANDING_PAGE_INDEX:
+									/* Write the descriptor data to the control endpoint */
+									Endpoint_Write_Control_PStream_LE(&WebUSB_LandingPage, WebUSB_LandingPage.Header.Size);
+									/* Release the endpoint after transaction. */
+									Endpoint_ClearOUT();
+									break;
+								default:    /* Stall transfer on invalid index. */
+									Endpoint_StallTransaction();
+									break;
+							}
+							break;
+						default:    /* Stall on unknown WebUSB request */
+							Endpoint_StallTransaction();
+							break;
+					}
+					break;
+				case MS_OS_20_VENDOR_CODE:
+					switch (USB_ControlRequest.wIndex) {
+						case MS_OS_20_DESCRIPTOR_INDEX:
+							/* Write the descriptor data to the control endpoint */
+							Endpoint_Write_Control_PStream_LE(&MS_OS_20_Descriptor, MIN(USB_ControlRequest.wLength, MS_OS_20_DESCRIPTOR_SET_TOTAL_LENGTH));
+							/* Release the endpoint after transaction. */
+							Endpoint_ClearOUT();
+							break;
+						default:    /* Stall on unknown MS OS 2.0 request */
+							Endpoint_StallTransaction();
+							break;
+					}
+					break;
+				default:    /* Stall on unknown Vendor Code */
+					Endpoint_StallTransaction();
+					break;
 			}
 			break;
 		default:
@@ -296,8 +335,12 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
 			Data+=4;
 			uint16_to_wire(wall_error_timeout, Data);
 			Data+=2;
-			memcpy(Data, target_order, 10);
-			*ReportSize = MSG_CONFIG_SIZE;
+			if (box_type == BOX_TYPE_POKEY) {
+				memcpy(Data, target_order, 10);
+				*ReportSize = MSG_CONFIG_SIZE_POKEY;
+			} else {
+				*ReportSize = MSG_CONFIG_SIZE_PEGGY;
+			}
 			return true;
 		} else if (*ReportID == 69) {
 			Data[0] = get_box_type();
@@ -461,20 +504,22 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
 			Data+=4;
 			wall_error_timeout = Data[0]<<8 | Data[1];
 			Data+=2;
-			int allmax = 1;
-			//check that these are actually 0-9
-			for (int i = 0; i < 10; i++) {
-				allmax = allmax && Data[i] == 0xff;
-				if (Data[i] > 9)
-					Data[i] = 0;
-			}
-			// If you send the same target twice in a row, it only counts as one because the second is completed in the same press. Not a bug.
-			if (allmax) {
-				// so that random generator will work, and easier than seeding off of an ADC line
-				srand(millis());
-				shuffle_order = 1;
-			} else {
-				memcpy(target_order,Data, 10);
+			if (box_type == BOX_TYPE_POKEY) {
+				int allmax = 1;
+				//check that these are actually 0-9
+				for (int i = 0; i < 10; i++) {
+					allmax = allmax && Data[i] == 0xff;
+					if (Data[i] > 9)
+						Data[i] = 0;
+				}
+				// If you send the same target twice in a row, it only counts as one because the second is completed in the same press. Not a bug.
+				if (allmax) {
+					// so that random generator will work, and easier than seeding off of an ADC line
+					srand(millis());
+					shuffle_order = 1;
+				} else {
+					memcpy(target_order, Data, 10);
+				}
 			}
 		} else if (ReportID == 71) {
 			//update peg thresholds in eeprom

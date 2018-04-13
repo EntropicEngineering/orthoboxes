@@ -43,6 +43,8 @@
 
 		#include "webusb.h"
 
+		#include "MS_OS_20_Device.h"
+
 		#include "debug.h"
 
 		#include "Config/AppConfig.h"
@@ -60,9 +62,19 @@
 
 			/* HID Interface */
 			USB_Descriptor_Interface_t            HID_Interface;
-			USB_HID_Descriptor_HID_t              HID_GenericHID;
+//			USB_HID_Descriptor_HID_t              HID_GenericHID;
 			USB_Descriptor_Endpoint_t             HID_ReportINEndpoint;
 		} USB_Descriptor_Configuration_t;
+
+		/** Type define for the Microsoft OS 2.0 Descriptor for the device. This must be defined in the
+		 *  application code as the descriptor may contain sub-descriptors which can vary between devices,
+		 *  and which identify which USB drivers Windows should use.
+		 */
+		typedef struct
+		{
+			MS_OS_20_Descriptor_Set_Header_t    Header;
+			MS_OS_20_CompatibleID_Descriptor    CompatibleID;
+		} MS_OS_20_Descriptor_t;
 
 		/** Enum for the device interface descriptor IDs within the device. Each interface descriptor
 		 *  should have a unique ID index associated with it, which can be used to refer to the
