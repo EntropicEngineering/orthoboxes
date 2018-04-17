@@ -13,8 +13,6 @@
 
 #define WEBUSB_VERSION VERSION_BCD(1, 0, 0)
 
-#define WEBUSB_PLATFORM_DESCRIPTOR_SIZE 24
-
 /* $ python -c "import uuid;print(', '.join(map(hex, uuid.UUID('3408b638-09a9-47a0-8bfd-a0768815b665').bytes_le)))" */
 #define WEBUSB_PLATFORM_UUID 0x38, 0xb6, 0x8, 0x34, 0xa9, 0x9, 0xa0, 0x47, 0x8b, 0xfd, 0xa0, 0x76, 0x88, 0x15, 0xb6, 0x65
 
@@ -26,7 +24,8 @@
  *
  */
 #define WEBUSB_DESCRIPTOR(VendorCode, LandingPageIndex) \
-	WEBUSB_PLATFORM_DESCRIPTOR_SIZE, DTYPE_DeviceCapability,\
+	/* WebUSB Platform Descriptor size */ 24, \
+	DTYPE_DeviceCapability, \
 	DCTYPE_Platform, \
 	/* Reserved */ 0, \
 	WEBUSB_PLATFORM_UUID, \

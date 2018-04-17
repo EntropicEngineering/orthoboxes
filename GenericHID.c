@@ -217,7 +217,7 @@ void EVENT_USB_Device_ConfigurationChanged(void)
  */
 const MS_OS_20_Descriptor_t PROGMEM MS_OS_20_Descriptor =
 {
-	.Header =
+	.Header = // 10 bytes
 		{
 			.Length = CPU_TO_LE16(10),
 			.DescriptorType = CPU_TO_LE16(MS_OS_20_SET_HEADER_DESCRIPTOR),
@@ -225,12 +225,23 @@ const MS_OS_20_Descriptor_t PROGMEM MS_OS_20_Descriptor =
 			.TotalLength = CPU_TO_LE16(MS_OS_20_DESCRIPTOR_SET_TOTAL_LENGTH)
 		},
 
-	.CompatibleID =
+	.CompatibleID = // 20 bytes
 		{
 			.Length = CPU_TO_LE16(20),
 			.DescriptorType = CPU_TO_LE16(MS_OS_20_FEATURE_COMPATBLE_ID),
 			.CompatibleID = u8"WINUSB\x00", // Automatically null-terminated to 8 bytes
 			.SubCompatibleID = {0, 0, 0, 0, 0, 0, 0, 0}
+		},
+
+	.RegistryData = // 10 + 40 + 78 = 128
+		{
+			.Length = CPU_TO_LE16(128),
+			.DescriptorType = CPU_TO_LE16(MS_OS_20_FEATURE_REG_PROPERTY),
+			.PropertyDataType = CPU_TO_LE16(MS_OS_20_REG_SZ),
+			.PropertyNameLength = CPU_TO_LE16(sizeof(MS_OS_20_REGISTRY_KEY)),
+			.PropertyName = MS_OS_20_REGISTRY_KEY, // 40 bytes
+			.PropertyDataLength = CPU_TO_LE16(sizeof(MS_OS_20_DEVICE_GUID_STRING)),
+			.PropertyData = MS_OS_20_DEVICE_GUID_STRING // 78 bytes
 		}
 };
 
@@ -242,10 +253,10 @@ const WebUSB_URL_Descriptor_t PROGMEM WebUSB_LandingPage = WEBUSB_URL_DESCRIPTOR
 /** Event handler for the library USB Control Request reception event. */
 void EVENT_USB_Device_ControlRequest(void)
 {
-//	Serial_SendString("Got Control Request:"); Serial_SendData(&USB_ControlRequest, sizeof(USB_ControlRequest)); Serial_SendByte(0x0A);
 	switch (USB_ControlRequest.bmRequestType) {
 		/* Handle Vendor Requests for WebUSB & MS OS Descriptors */
 		case (REQDIR_DEVICETOHOST | REQTYPE_VENDOR | REQREC_DEVICE):
+			Serial_SendString("Got Vendor Control Request:"); Serial_SendData(&USB_ControlRequest, sizeof(USB_ControlRequest)); Serial_SendByte(0x0A);
 			/* Free the endpoint for the next Request */
 			Endpoint_ClearSETUP();
 			switch (USB_ControlRequest.bRequest) {
@@ -272,8 +283,9 @@ void EVENT_USB_Device_ControlRequest(void)
 				case MS_OS_20_VENDOR_CODE:
 					switch (USB_ControlRequest.wIndex) {
 						case MS_OS_20_DESCRIPTOR_INDEX:
+//							Serial_SendString("Sending MS_OS_20_Descriptor:"); Serial_SendData(&MS_OS_20_Descriptor, MS_OS_20_DESCRIPTOR_SET_TOTAL_LENGTH); Serial_SendByte(0x0A);
 							/* Write the descriptor data to the control endpoint */
-							Endpoint_Write_Control_PStream_LE(&MS_OS_20_Descriptor, MIN(USB_ControlRequest.wLength, MS_OS_20_DESCRIPTOR_SET_TOTAL_LENGTH));
+							Endpoint_Write_Control_PStream_LE(&MS_OS_20_Descriptor, MS_OS_20_DESCRIPTOR_SET_TOTAL_LENGTH);
 							/* Release the endpoint after transaction. */
 							Endpoint_ClearOUT();
 							break;
