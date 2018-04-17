@@ -26,6 +26,12 @@ void uint16_to_wire(uint16_t v, uint8_t w[])
 	w[0] = v>>8;
 	w[1] = v&0xff;
 }
+uint16_t uint16_from_wire(const uint8_t w[])
+{
+	uint16_t ret = 0;
+	ret = (w[0]<<8) + w[1];
+	return ret;
+}
 union float_byteview {
 	float val;
 	uint8_t u8s[4];

@@ -9,4 +9,4 @@ for i in range(0,6):
 def swizzle(x):
     return x[2:4] + " " + x[0:2]
 
-print(" ".join([("%d" % x) for x in mids]))
+print(",".join([("%d" % x) for x in mids]))

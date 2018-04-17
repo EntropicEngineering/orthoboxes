@@ -329,7 +329,7 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM HID_Descriptor_Peggy[] =
 			STRING_INDEX(STRING_ID_timestamp),
 			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(64), REPORT_COUNT(1), HID_RI_INPUT(8, HID_IOF_VARIABLE),
 			STRING_INDEX(STRING_ID_status),
-			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(4), REPORT_COUNT(4), HID_RI_INPUT(8, HID_IOF_VARIABLE),
+			USAGE(SIMPLE_HID_UINT), REPORT_SIZE(8), REPORT_COUNT(4), HID_RI_INPUT(8, HID_IOF_VARIABLE),
 		END_COLLECTION,
 
 		/* Report Name: 'wall_error'
@@ -552,7 +552,7 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptorPokey =
 
 	.ManufacturerStrIndex   = STRING_ID_Manufacturer,
 	.ProductStrIndex        = STRING_ID_Product,
-	.SerialNumStrIndex      = NO_DESCRIPTOR,
+	.SerialNumStrIndex      = STRING_ID_Serial_Number,
 
 	.NumberOfConfigurations = FIXED_NUM_CONFIGURATIONS
 };
@@ -669,7 +669,8 @@ const USB_Descriptor_String_t PROGMEM ManufacturerString = USB_STRING_DESCRIPTOR
  */
 const USB_Descriptor_String_t PROGMEM ProductString = USB_STRING_DESCRIPTOR(L"Orthobox");
 
-const USB_Descriptor_String_t PROGMEM SerialNumber = USB_STRING_DESCRIPTOR(L"0xDEADBEEF");
+//TODO change this to directly inject bytes
+const USB_Descriptor_String_t PROGMEM SerialNumber = USB_STRING_DESCRIPTOR(L"Demo");
 
 #define LSTR(str) L ## str
 #define N_VAR(var) const USB_Descriptor_String_t PROGMEM NAMED_##var = USB_STRING_DESCRIPTOR(LSTR(#var))

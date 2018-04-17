@@ -112,7 +112,7 @@ int main(void)
 	box_init();
 	adc_task();
 
-	Serial_Init(115200, 0);
+	//Serial_Init(115200, 0);
 
 	//could make a "box" struct with some function pointers but what's the point
 	//TODO exactly how early can we do this? Definitely after ADC.
@@ -328,7 +328,6 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
                                          uint16_t* const ReportSize)
 {
 	uint8_t* Data  = (uint8_t*)ReportData;
-	uint16_t *u16d = (uint16_t*) ReportData;
 	//uint8_t  CurrLEDMask = LEDs_GetLEDs();
 	//uint16_t cb_wValue;
 	//const USB_Descriptor_String_t* str_addr = NULL;
@@ -337,7 +336,6 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
 	//uint16_t cb_strlen;
 	//uint16_t strlen_rem;
 	static int times;
-	int ix;
 	UNUSED(HIDInterfaceInfo);
 	switch (ReportType) {
 	case HID_REPORT_ITEM_Feature:
@@ -363,7 +361,7 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
 		} else if (*ReportID == 71) {
 			//return peg thresholds
 			for (int i = 0; i < PEG_COUNT;i++)
-				u16d[i] = pegs[i].thresh;
+				uint16_to_wire(pegs[i].thresh, &Data[2*i]);
 			*ReportSize = 12;
 			return true;
 		}
@@ -452,22 +450,21 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
 			times = 0;
 			
 			//send all 3 tool adcs
-			uint16_t* d = (uint16_t*) Data;
-			d[0] = adc_values[TOOL_ERROR_LINE];
-			d[1] = adc_values[TOOL_HOLDER_LINE];
-			d[2] = adc_values[TOOL_CONNECTED_LINE];
+			uint16_to_wire(adc_values[TOOL_ERROR_LINE], Data+0);
+			uint16_to_wire(adc_values[TOOL_HOLDER_LINE], Data+2);
+			uint16_to_wire(adc_values[TOOL_CONNECTED_LINE], Data+4);
+			
 			Data+=6;
 			
 			//send all 6+1 peggy optic adcs
-			d = (uint16_t*) Data;
-			ix = 0;
-			d[ix++] = adc_values[0];
-			d[ix++] = adc_values[1];
-			d[ix++] = adc_values[4];
-			d[ix++] = adc_values[5];
-			d[ix++] = adc_values[6];
-			d[ix++] = adc_values[7];
-			d[ix++] = adc_values[DROP_ERROR_LINE];
+			uint16_to_wire(adc_values[0], Data+0);
+			uint16_to_wire(adc_values[1], Data+2);
+			uint16_to_wire(adc_values[4], Data+4);
+			uint16_to_wire(adc_values[5], Data+6);
+			uint16_to_wire(adc_values[6], Data+8);
+			uint16_to_wire(adc_values[7], Data+10);
+			uint16_to_wire(adc_values[DROP_ERROR_LINE], Data+12);
+			
 			Data += 14;
 			
 			//send all 10 pokey buttons
@@ -496,7 +493,6 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
                                           const uint16_t ReportSize)
 {
 	uint8_t* Data = (uint8_t*)ReportData;
-	uint16_t *u16d = (uint16_t*) ReportData;
 	//uint8_t  NewLEDMask = LEDS_NO_LEDS;
 	UNUSED(HIDInterfaceInfo);
 	UNUSED(ReportSize);
@@ -538,7 +534,7 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
 			//hard 6 because it doesn't magically update if I change the number of pegs
 			//PEG_COUNT so that looking for it will find that it is used here
 			for (int i = 0; i < 6; i++) {
-				pegs[i].thresh = u16d[i];
+				pegs[i].thresh = uint16_from_wire(&Data[2*i]);
 			}
 			write_peggy_thresholds();
 		}

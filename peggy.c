@@ -74,6 +74,7 @@ peg_tick(struct peg *p)
 void
 handle_pegs(void)
 {
+	times_pegstm_called++;
 	FOREACH_PEG(p) peg_tick(p);
 }
 
@@ -224,14 +225,14 @@ wait_to_start_act(void)
 	//report if the pegs are on in the status
 	// this doesn't work because the pegs won't settle into "capped" for a while and the status is requested quite early. It does put the appropriate values into status though
 	handle_pegs();
-	uint16_t peg_status = 0;
-	
+	//uint16_t peg_status = 0; // commented out to use global instead
+	peg_status = 0;
 	//works >>1 <<8 is ugly though
-	for (int i = 0; i < PEG_COUNT;i++,peg_status<<=1)
-		if (pegs[PEG_COUNT-1-i].state == PEG_STATE_CAPPED)
-			peg_status |= 1;
+	for (int i = 0; i < PEG_COUNT;i++)
+		if (pegs[i].state == PEG_STATE_CAPPED)
+			peg_status |= (1<<i);
 	
-	peg_status >>= 1;
+	//peg_status >>= 1;
 	peg_status <<= 8;
 	
 	status &= ~((uint32_t) 0x0000ff00);
@@ -243,7 +244,7 @@ wait_to_start_act(void)
 	if (lms_said_to_start && !tool_in_slot()) {
 		lms_said_to_start = 0;
 		//clear this status flag -- better than leaving it stale
-		status &= ~((uint32_t) 0x0000ff00);
+		//status &= ~((uint32_t) 0x0000ff00);
 		return 1;
 	}
 	return 0;
