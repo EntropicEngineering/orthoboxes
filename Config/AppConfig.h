@@ -46,10 +46,8 @@
 #define WEBUSB_VENDOR_CODE 0x69
 #define WEBUSB_LANDING_PAGE_INDEX 0
 
-#define MS_OS_20_VENDOR_CODE 0x42     // Must be different than WEBUSB_VENDOR_CODE
-#define MS_OS_20_DESCRIPTOR_SET_TOTAL_LENGTH 158
-// python -c "import uuid;print('u\"{' + str(uuid.uuid4()) + '}\"')"
-#define MS_OS_20_DEVICE_GUID_STRING L"{7f14b3be-7be4-4465-bbf9-22e4be8ef6b6}" // 38 characters + null, times 2 = 78 bytes
+#define MS_OS_20_VENDOR_CODE 0x45     // Must be different than WEBUSB_VENDOR_CODE
+#define MS_OS_20_DESCRIPTOR_SET_TOTAL_LENGTH (10 + 20)
 
 #define MAGIC_BOOT_KEY 0xDC42ACCA
 #define BOOTLOADER_SEC_SIZE_BYTES 4096
