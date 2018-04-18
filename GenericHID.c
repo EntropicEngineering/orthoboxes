@@ -36,6 +36,8 @@
 
 #include "GenericHID.h"
 #include "webusb.h"
+#include "Descriptors.h"
+#include "MS_OS_20_Device.h"
 
 /** Buffer to hold the previously generated HID report, for comparison purposes inside the HID class driver. */
 static uint8_t PrevHIDReportBuffer[255]; 
@@ -213,11 +215,14 @@ void EVENT_USB_Device_ConfigurationChanged(void)
 
 /** Microsoft OS 2.0 Descriptor. This is used by Windows to select the USB driver for the device.
  *
- *  For WebUSB in Chrome, the correct device is WINUSB.
+ *  For WebUSB in Chrome, the correct driver is WinUSB, which is selected via CompatibleID.
+ *
+ *  Additionally, while Chrome is built using libusb, a magic registry key needs to be set containing a GUID for
+ *  the device.
  */
 const MS_OS_20_Descriptor_t PROGMEM MS_OS_20_Descriptor =
 {
-	.Header = // 10 bytes
+	.Header =
 		{
 			.Length = CPU_TO_LE16(10),
 			.DescriptorType = CPU_TO_LE16(MS_OS_20_SET_HEADER_DESCRIPTOR),
@@ -225,23 +230,12 @@ const MS_OS_20_Descriptor_t PROGMEM MS_OS_20_Descriptor =
 			.TotalLength = CPU_TO_LE16(MS_OS_20_DESCRIPTOR_SET_TOTAL_LENGTH)
 		},
 
-	.CompatibleID = // 20 bytes
+	.CompatibleID =
 		{
 			.Length = CPU_TO_LE16(20),
 			.DescriptorType = CPU_TO_LE16(MS_OS_20_FEATURE_COMPATBLE_ID),
 			.CompatibleID = u8"WINUSB\x00", // Automatically null-terminated to 8 bytes
 			.SubCompatibleID = {0, 0, 0, 0, 0, 0, 0, 0}
-		},
-
-	.RegistryData = // 10 + 40 + 78 = 128
-		{
-			.Length = CPU_TO_LE16(128),
-			.DescriptorType = CPU_TO_LE16(MS_OS_20_FEATURE_REG_PROPERTY),
-			.PropertyDataType = CPU_TO_LE16(MS_OS_20_REG_SZ),
-			.PropertyNameLength = CPU_TO_LE16(sizeof(MS_OS_20_REGISTRY_KEY)),
-			.PropertyName = MS_OS_20_REGISTRY_KEY, // 40 bytes
-			.PropertyDataLength = CPU_TO_LE16(sizeof(MS_OS_20_DEVICE_GUID_STRING)),
-			.PropertyData = MS_OS_20_DEVICE_GUID_STRING // 78 bytes
 		}
 };
 
@@ -284,8 +278,9 @@ void EVENT_USB_Device_ControlRequest(void)
 					switch (USB_ControlRequest.wIndex) {
 						case MS_OS_20_DESCRIPTOR_INDEX:
 //							Serial_SendString("Sending MS_OS_20_Descriptor:"); Serial_SendData(&MS_OS_20_Descriptor, MS_OS_20_DESCRIPTOR_SET_TOTAL_LENGTH); Serial_SendByte(0x0A);
+//							Endpoint_Write_Control_Stream_LE(&MS_OS_20_Descriptor, MS_OS_20_DESCRIPTOR_SET_TOTAL_LENGTH);
 							/* Write the descriptor data to the control endpoint */
-							Endpoint_Write_Control_PStream_LE(&MS_OS_20_Descriptor, MS_OS_20_DESCRIPTOR_SET_TOTAL_LENGTH);
+							Endpoint_Write_Control_PStream_LE(&MS_OS_20_Descriptor, MS_OS_20_Descriptor.Header.TotalLength);
 							/* Release the endpoint after transaction. */
 							Endpoint_ClearOUT();
 							break;
